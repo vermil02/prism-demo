@@ -588,7 +588,7 @@
   @keyframes stOut{to{opacity:0;max-height:0;margin-top:0;margin-bottom:-7px;transform:translateY(-4px)}}  /* gap 1개만 흡수 → 메시지 간격 7px 유지 */
   #docs .aibody .a{align-self:flex-start;max-width:95%;background:#fff;border:1px solid var(--line);border-radius:12px;padding:9px 12px;box-shadow:0 1px 2px rgba(0,0,0,.04)}  /* 민서연 채팅 말풍선 스타일 */
   #docs .aibody .a{transform-origin:top left}
-  #docs.show .aibody .a{animation:bubblePop .45s cubic-bezier(.34,1.6,.5,1) both;animation-delay:8.0s}  /* ack·done2와 동일한 팝 */
+  #docs.show .aibody .a{animation:bubblePop .45s cubic-bezier(.34,1.6,.5,1) both, bubbleBoing .5s ease-out both;animation-delay:8.0s, 8.5s}  /* 등장=ack·done2와 동일 팝 + 8.5s 문서 사출 시 뽀잉 */
   #docs .airesp{display:flex;gap:9px;align-items:flex-start;margin-top:8px}
   #docs .airespbody{flex:1;min-width:0;display:flex;flex-direction:column;gap:7px}
   #docs .aiava{position:relative;width:30px;height:30px;border-radius:50%;flex-shrink:0;background:#eceaff;opacity:0}
@@ -919,7 +919,7 @@
 </style>
 </head>
 <body>
-<div class="build-stamp" style="position:fixed;top:10px;right:14px;font-size:11px;color:#b6b9c4;font-weight:600;z-index:9999;font-family:-apple-system,Pretendard,sans-serif;letter-spacing:.01em">업데이트 <span id="bdate">2026-06-26 13:48 KST</span></div>
+<div class="build-stamp" style="position:fixed;top:10px;right:14px;font-size:11px;color:#b6b9c4;font-weight:600;z-index:9999;font-family:-apple-system,Pretendard,sans-serif;letter-spacing:.01em">업데이트 <span id="bdate">2026-06-26 14:25 KST</span></div>
 <div class="wrap">
 
   <div class="tabs">
@@ -2984,7 +2984,7 @@
 #flow .wchip{display:flex;align-items:center;gap:6px;border:1px solid var(--line);border-radius:9px;padding:6px 10px;font-size:11.5px;font-weight:600;color:#3a3f4b;white-space:nowrap;flex:0 0 auto}
 #flow .wchip .ci{width:15px;height:15px;border-radius:5px;flex:0 0 auto}
 #flow .wfmini{position:absolute;left:15px;bottom:13px;width:132px;height:80px;background:#fff;border:1px solid var(--line);border-radius:10px;box-shadow:0 6px 16px rgba(25,28,50,.1)}
-#flow .wfmini i{position:absolute;border-radius:2px;display:block;transition:opacity .3s}
+#flow .wfmini i{position:absolute;border-radius:2px;display:block;transition:opacity .3s;outline:2px solid transparent;outline-offset:2px}
 #flow .wfmini i.act{outline:2px solid var(--accent);outline-offset:2px;border-radius:2px;animation:mmPulse .9s ease both}
 @keyframes mmPulse{0%{outline-color:transparent}18%{outline-color:var(--accent)}72%{outline-color:var(--accent)}100%{outline-color:transparent}}
 @keyframes wfRun{0%{box-shadow:0 1px 3px rgba(25,28,50,.07);transform:scale(1)}16%{box-shadow:0 0 0 2.5px var(--nac),0 9px 24px rgba(25,28,50,.14);transform:scale(1.03)}82%{box-shadow:0 0 0 2.5px var(--nac),0 9px 24px rgba(25,28,50,.14);transform:scale(1.03)}100%{box-shadow:0 0 0 1.5px var(--nac),0 3px 10px rgba(25,28,50,.08);transform:scale(1)}}
@@ -3599,13 +3599,8 @@
     window.flowEdgesStart=function(){ if(!raf)raf=requestAnimationFrame(loop); };
     // 미니맵 활성화 펄스 — 노드 wfRun 활성 순서를 그대로 미러링
     var SELSEQ=[['sch',5.7],['db',6.6],['cls',8.1],['sales',10.2],['supp',10.35],['plan',10.5],['auto',10.65]], selTs=[];
-    window.flowMiniSel=function(){
-      selTs.forEach(clearTimeout); selTs=[];
-      IDS.forEach(function(id){if(mRect[id])mRect[id].classList.remove('act');});
-      SELSEQ.forEach(function(s){ selTs.push(setTimeout(function(){
-        var m=mRect[s[0]]; if(!m||!c.classList.contains('show'))return;
-        m.classList.remove('act'); void m.offsetWidth; m.classList.add('act');
-      }, s[1]*1000)); });
+    window.flowMiniSel=function(){   // 마스터 클럭 구동: 각 점에 고정 delay 펄스(노드 애니와 동일하게 스크럽·되감기 추종)
+      SELSEQ.forEach(function(s){ var m=mRect[s[0]]; if(m){ m.style.animation='mmPulse .9s ease both'; m.style.animationDelay=s[1]+'s'; } });
     };
     if(c.classList.contains('show')){window.flowEdgesStart();window.flowMiniSel();}
   })();
