@@ -919,14 +919,14 @@
 </style>
 </head>
 <body>
-<div class="build-stamp" style="position:fixed;top:10px;right:14px;font-size:11px;color:#b6b9c4;font-weight:600;z-index:9999;font-family:-apple-system,Pretendard,sans-serif;letter-spacing:.01em">업데이트 <span id="bdate">2026-06-26 12:41 KST</span></div>
+<div class="build-stamp" style="position:fixed;top:10px;right:14px;font-size:11px;color:#b6b9c4;font-weight:600;z-index:9999;font-family:-apple-system,Pretendard,sans-serif;letter-spacing:.01em">업데이트 <span id="bdate">2026-06-26 13:19 KST</span></div>
 <div class="wrap">
 
   <div class="tabs">
     <button class="tab active" data-target="collab">협업</button>
     <button class="tab" data-target="docs">지식문서</button>
-    <button class="tab todo" data-target="email">이메일</button>
-    <button class="tab todo" data-target="data">실험데이터분석</button>
+    <button class="tab" data-target="email">이메일</button>
+    <button class="tab" data-target="data">실험데이터분석</button>
     <button class="tab" data-target="flow">워크플로우</button>
   </div>
   <div class="sa-ctrl">
@@ -1864,8 +1864,874 @@
     </div>
   </div>
 
-  <div class="panel" id="email"><div class="appshell"><div class="placeholder" style="margin:auto"><div class="big">✉️</div><p><b>이메일</b> — 받은 메일 → AI 요약 → 질문·답변·자동화<br>(다음 단계 제작)</p></div></div></div>
-  <div class="panel" id="data"><div class="appshell"><div class="placeholder" style="margin:auto"><div class="big">🧪</div><p><b>실험데이터분석</b> — 보고서 작성 + 보안 상태<br>(다음 단계 제작)</p></div></div></div>
+  <style>
+/* ════════ 이메일 ════════ */
+  #email .appshell{font-size:13px}
+  /* 좌측 메일함 사이드 */
+  #email .em-side{flex:0 0 200px;border-right:1px solid var(--line);background:#fff;padding:14px 12px;display:flex;flex-direction:column;overflow:hidden}
+  #email .em-acct{display:flex;align-items:center;justify-content:center;gap:0;border:1px solid var(--line);border-radius:8px;padding:8px 10px;font-size:12px;color:var(--soft-ink);font-weight:600;margin-bottom:12px}
+  #email .em-acct .at{flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  #email .em-acct .cv{color:var(--muted);flex-shrink:0}
+  #email .em-acct .cv svg{width:14px;height:14px;display:block}
+  #email .em-new{display:flex;align-items:center;justify-content:center;gap:0;background:var(--accent);color:#fff;border-radius:10px;padding:11px;font-size:13.5px;font-weight:700;margin-bottom:14px;box-shadow:0 8px 18px rgba(108,92,239,.28)}
+  #email .em-new .np{display:inline-flex;align-items:center;justify-content:center;flex-shrink:0}
+  #email .em-new .np svg{width:18px;height:18px;display:block}
+  #email .em-new .nt{white-space:nowrap;overflow:hidden;margin-left:7px}
+  #email .em-fold{display:flex;align-items:center;gap:9px;padding:8px 9px;border-radius:8px;font-size:12.5px;color:var(--soft-ink)}
+  #email .em-fold .fi{width:17px;height:17px;display:inline-flex;align-items:center;justify-content:center;color:#52627b;flex-shrink:0}
+  #email .em-fold .fi svg{width:16px;height:16px;display:block}
+  #email .em-fold .fl{white-space:nowrap;overflow:hidden}
+  #email .em-fold.on .fi{color:var(--accent)}
+  #email .em-fold.on{background:var(--accent-soft);color:var(--accent);font-weight:700}
+  #email .em-fold.on .fi{filter:none}
+  #email .em-fold .ct{margin-left:auto;font-size:11px;font-weight:700;color:#fff;background:var(--accent);border-radius:999px;min-width:18px;height:18px;display:inline-flex;align-items:center;justify-content:center;padding:0 5px}
+  #email .em-side .sep{height:1px;background:var(--line);margin:9px 2px}
+  #email .em-sync{margin-top:auto;display:flex;align-items:center;gap:7px;padding:8px 6px 0;font-size:11px;color:var(--muted);border-top:1px solid var(--line)}
+  #email .em-sync svg{width:13px;height:13px}
+  #email .em-sync .gear{margin-left:auto}
+
+  /* 중앙 메일 리스트 */
+  #email .em-list{flex:0 0 392px;border-right:1px solid var(--line);display:flex;flex-direction:column;background:#fff;min-width:0}
+  #email .em-tools{display:flex;align-items:center;gap:15px;height:50px;padding:0 16px;border-bottom:1px solid var(--line);color:#9a9aa6;flex-shrink:0}
+  #email .em-tools .tk{width:17px;height:17px;display:inline-flex;align-items:center;justify-content:center}
+  #email .em-tools .tk svg{width:17px;height:17px}
+  #email .em-tools .cb,#email .em-row .cb{width:15px;height:15px;border:1.5px solid #cfcfd9;border-radius:3px;flex-shrink:0}
+  #email .em-scroll{flex:1;overflow:hidden}
+  #email .em-row{display:flex;gap:8px;padding:9px 14px;border-bottom:1px solid #f1f1f6;align-items:flex-start}
+  #email .em-row .cb{margin-top:2px}
+  #email .em-dot{width:6px;height:6px;border-radius:50%;background:transparent;margin-top:6px;flex-shrink:0}
+  #email .em-row.unread .em-dot{background:#3b82f6}
+  #email .em-body{min-width:0;flex:1}
+  #email .em-from{font-size:11.5px;font-weight:600;color:#4a4a55}
+  #email .em-row.unread .em-from{font-weight:700;color:var(--ink)}
+  #email .em-row.strong .em-from{font-weight:800;color:var(--ink)}
+  #email .em-subj{font-size:11.5px;color:#54545f;margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  #email .em-row.unread .em-subj{font-weight:700;color:var(--ink)}
+  #email .em-prev{font-size:10.5px;color:var(--muted);margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  #email .em-meta{display:flex;flex-direction:column;align-items:flex-end;gap:9px;flex-shrink:0;padding-left:4px}
+  #email .em-time{font-size:11px;color:var(--muted)}
+  #email .em-star{color:#dadae2}
+  #email .em-star svg{width:15px;height:15px;display:block}
+  #email .em-page{display:flex;align-items:center;gap:6px;height:48px;padding:0 16px;border-top:1px solid var(--line);font-size:11.5px;color:var(--muted);flex-shrink:0}
+  #email .em-page .pg{margin-right:auto}
+  #email .em-page .nav-b{width:22px;height:22px;border:1px solid var(--line);border-radius:6px;display:inline-flex;align-items:center;justify-content:center;color:#9a9aa6}
+  #email .em-page .nav-b svg{width:13px;height:13px}
+
+  /* 우측 읽기 패널 — 빈 상태 + 열린 메일(detail) 겹쳐두고 타임라인으로 전환 */
+  #email .em-read{flex:1;position:relative;background:#fff;min-width:0}
+  #email .em-empty{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;color:var(--muted);background:#fcfcfe}
+  #email .em-empty .ic{width:50px;height:50px;color:#d6d6df}
+  #email .em-empty p{margin-top:14px;font-size:13px}
+  #email .em-detail{position:absolute;inset:0;display:flex;flex-direction:column;background:#fff;overflow:hidden;opacity:0}
+  /* 메일 탭 바 — 받은 메일 / 내 답장 (브라우저 탭형). 액션바는 탭 아래 한 줄로 */
+  #email .em-tabs{display:flex;align-items:flex-end;gap:3px;height:40px;padding:0 12px;background:#fafafb;border-bottom:1px solid var(--line);flex-shrink:0}
+  #email .em-tab{display:inline-flex;align-items:center;gap:6px;height:29px;padding:0 13px;font-size:11.5px;font-weight:600;color:var(--muted);background:transparent;border:1px solid transparent;border-bottom:none;border-radius:8px 8px 0 0;white-space:nowrap;cursor:pointer;position:relative;top:1px}
+  #email .em-tab .tab-ic{display:inline-flex}
+  #email .em-tab .tab-ic svg{width:13px;height:13px}
+  #email .em-tab .tab-x{display:inline-flex;align-items:center;justify-content:center;width:15px;height:15px;border-radius:4px;color:var(--muted);margin-left:3px;flex-shrink:0}
+  #email .em-tab .tab-x svg{width:10px;height:10px}
+  #email .em-tab .tab-x:hover{background:rgba(0,0,0,.08);color:var(--ink)}
+  #email .em-tab.tab-mail{color:var(--ink);font-weight:700;background:#fff;border-color:var(--line);border-bottom:1px solid #fff}
+  #email .em-tab.tab-reply{max-width:0;opacity:0;padding-left:0;padding-right:0;overflow:hidden;color:var(--ink);font-weight:700;background:#fff;border:1px solid var(--line);border-bottom:1px solid #fff;white-space:nowrap}
+  @keyframes tabDeact{to{color:var(--muted);font-weight:600;background:transparent;border-color:transparent}}
+  @keyframes tabReplyIn{0%{max-width:0;opacity:0;padding-left:0;padding-right:0}55%{opacity:1}100%{max-width:180px;opacity:1;padding-left:13px;padding-right:13px}}
+  #email .em-panes{flex:1;position:relative;overflow:hidden}
+  #email .em-pane{position:absolute;inset:0;display:flex;flex-direction:column;overflow:hidden;background:#fff;opacity:0}
+  #email .em-pane.em-reply{pointer-events:none}
+  /* 답장 작성 화면 — 메일 detail 섹션이 답장 창으로 전환 */
+  #email .em-reply{position:absolute;inset:0;display:flex;flex-direction:column;background:#fff;overflow:hidden;opacity:0}
+  #email .em-rephd{display:flex;align-items:center;gap:7px;height:50px;padding:0 16px;border-bottom:1px solid var(--line);flex-shrink:0}
+  #email .em-rephd .rep-back{display:inline-flex;color:var(--soft-ink)}
+  #email .em-rephd .rep-back svg{width:16px;height:16px}
+  #email .em-rephd .rep-title{font-size:13px;font-weight:700;color:var(--ink)}
+  #email .em-repbody{flex:1;display:flex;flex-direction:column;overflow:hidden;padding:0 22px;position:relative}
+  /* 워크플로우 wfwork와 동일 — 직각 사각형 테두리(흐르는 그라데이션) + 옅은 틴트, 윤소율이 이 섹션을 관리하는 느낌 */
+  #email .em-repbody::before{content:'';position:absolute;inset:0;background:rgba(124,92,239,.03);pointer-events:none;opacity:0;z-index:0}
+  #email .em-repbody::after{content:'';position:absolute;inset:0;border:2px solid transparent;background:linear-gradient(100deg,#6d5cf0,#8b5cf6,#7aa0ff,#8b5cf6,#6d5cf0) border-box;background-size:200% 100%;-webkit-mask:linear-gradient(#fff 0 0) padding-box,linear-gradient(#fff 0 0);-webkit-mask-composite:xor;mask:linear-gradient(#fff 0 0) padding-box,linear-gradient(#fff 0 0);mask-composite:exclude;pointer-events:none;opacity:0;z-index:3}
+  #email .em-repbody>*{position:relative;z-index:1}
+  /* 워크플로우 wfwork-badge 그대로 — AI 작업 중 + 별효과 */
+  #email .em-repbody .em-repbadge{position:absolute;right:14px;bottom:14px;z-index:5;display:inline-flex;align-items:center;gap:6px;color:#6d5cf0;border:1.6px solid transparent;background:linear-gradient(#fff,#fff) padding-box,linear-gradient(100deg,#6d5cf0,#8b5cf6,#7aa0ff,#8b5cf6,#6d5cf0) border-box;background-size:auto,200% 100%;font-size:11px;font-weight:700;padding:5px 11px;border-radius:999px;box-shadow:0 4px 12px rgba(110,90,240,.16);white-space:nowrap;opacity:0;pointer-events:none}
+  #email .em-repbadge .sp{font-size:13px;display:inline-flex;align-items:center}
+  #email .em-repbadge .sp svg{width:13px;height:13px}
+  #email .em-repbadge .bdstar{overflow:visible}
+  #email .em-repbadge .bdstar path{transform-box:fill-box;transform-origin:center}
+  #email .em-repbody .rep-field{display:flex;align-items:center;gap:10px;padding:11px 0;border-bottom:1px solid var(--line);font-size:12.5px}
+  #email .em-repbody .rep-lb{color:var(--muted);flex-shrink:0;width:54px}
+  #email .em-repbody .rep-to,#email .em-repbody .rep-subj{color:var(--ink)}
+  /* AI가 미리 채운 초안 — placeholder 톤(옅은 회색)으로 '제안' 느낌 */
+  #email .em-repbody .rep-editor{flex:1;padding:18px 0;font-size:13px;line-height:1.85;color:#9a9aa6;overflow:hidden;position:relative}
+  /* 지식 카드(.kc) 스캔 — 코너 브래킷 + 레이저 스윕 */
+  #email .em-wfai .kc-scan{position:absolute;inset:0;pointer-events:none;opacity:0;z-index:5;border:1.5px solid var(--accent);border-radius:12px;background:linear-gradient(rgba(108,92,239,.08),rgba(108,92,239,.02))}
+  #email .em-wfai .kc .rsc{position:absolute;width:11px;height:11px;opacity:0;z-index:6}
+  #email .em-wfai .kc .rsc.tl{top:4px;left:4px;border-top:2px solid var(--accent);border-left:2px solid var(--accent)}
+  #email .em-wfai .kc .rsc.tr{top:4px;right:4px;border-top:2px solid var(--accent);border-right:2px solid var(--accent)}
+  #email .em-wfai .kc .rsc.bl{bottom:4px;left:4px;border-bottom:2px solid var(--accent);border-left:2px solid var(--accent)}
+  #email .em-wfai .kc .rsc.br{bottom:4px;right:4px;border-bottom:2px solid var(--accent);border-right:2px solid var(--accent)}
+  #email .em-wfai .kc-scan::before{content:"";position:absolute;left:0;right:0;top:0;height:2px;background:linear-gradient(90deg,transparent,var(--accent),transparent);box-shadow:0 0 10px 1px var(--accent);z-index:6}
+  #email .em-repbody .rep-editor p{margin-bottom:13px}
+  #email .em-repbody .rep-editor p.tight{margin-bottom:2px}
+  /* 자동 서명(CRISSIT) */
+  #email .rep-sig{display:inline-block;margin-top:16px;padding:13px 16px;border:1px solid var(--line);border-radius:10px;background:#fbfbfd;font-size:11px;line-height:1.7;color:#9a9aa6}
+  #email .rep-sig .sig-logo{height:21px;width:auto;display:block;margin-bottom:9px}
+  #email .rep-sig .sig-name{font-size:12.5px;color:#3a3a44}
+  #email .rep-sig .sig-name b{font-weight:800;color:#2a2a33;margin-right:6px}
+  #email .rep-sig .sig-role,#email .rep-sig .sig-contact{color:#6b6b76}
+  #email .rep-sig .sig-tag{margin-top:5px}
+  #email .rep-sig .sig-web{color:var(--accent)}
+  #email .em-reply .rep-caret{display:inline-block;width:1.5px;height:1.05em;background:var(--accent);vertical-align:-2px;margin-left:1px;animation:caretBlink 1.1s step-end infinite}
+  /* 제목 타이핑(타자기) + 본문 채워지는 연출 */
+  #email .em-reply .rep-subj{display:inline-block;position:relative;vertical-align:bottom}
+  #email .em-reply .rep-subj::before{content:'';position:absolute;left:-4px;right:-4px;top:.02em;bottom:.02em;background:#e3ecff;border-radius:5px;opacity:0;z-index:0}
+  #email .em-reply .rep-subj-tx{position:relative;z-index:1;display:inline-block;white-space:nowrap;clip-path:inset(0 100% 0 0)}
+  #email .em-reply .rep-editor-in p{position:relative}
+  #email .em-reply .rep-editor-in p::before{content:'';position:absolute;left:0;right:0;top:.12em;bottom:.12em;background:var(--accent-soft);border-radius:5px;opacity:0;z-index:0}
+  #email .em-reply .rep-editor-in .lt{position:relative;z-index:1;clip-path:inset(0 100% 0 0)}
+  #email .em-reply .rep-editor-in .rep-caret{z-index:1}
+  /* 초안 라벨 — 본문(플레이스홀더) 바로 아래 */
+  /* 감사합니다 아래 — 윤소율 [AI]가 작성한 초안 */
+  #email .em-repbody .rep-ainote{display:flex;width:fit-content;align-items:center;font-size:11px;color:var(--accent);font-weight:600;margin-top:10px}
+  #email .em-repbody .rep-ainote .ai-draft{margin-left:6px}
+  #email .em-repbody .rep-ainote .ai-ver{margin-left:6px;font-size:9.5px;font-weight:700;color:var(--muted);background:#f0f0f5;border-radius:5px;padding:1px 6px;letter-spacing:.3px}
+  /* 답장 서식 툴바 */
+  #email .em-reptools{display:flex;align-items:center;gap:1px;padding:7px 0;margin-bottom:4px;border-bottom:1px solid var(--line);flex-shrink:0}
+  #email .em-reptools .tbtn{width:26px;height:26px;display:inline-flex;align-items:center;justify-content:center;border-radius:6px;color:var(--soft-ink);cursor:pointer}
+  #email .em-reptools .tbtn svg{width:15px;height:15px}
+  #email .em-reptools .tbtn:hover{background:#f4f4f8;color:var(--ink)}
+  #email .em-reptools .tdiv{width:1px;height:16px;background:var(--line);margin:0 6px}
+  #email .em-repfoot{display:flex;align-items:center;gap:10px;height:48px;padding:0 16px;border-top:1px solid var(--line);flex-shrink:0}
+  #email .em-repfoot .rep-ainote{display:inline-flex;align-items:center;gap:5px;font-size:11px;color:var(--accent);font-weight:600}
+  #email .em-repfoot .rep-ainote svg{width:12px;height:12px}
+  #email .em-repfoot .rep-btns{margin-left:auto;display:flex;gap:8px}
+  #email .em-repfoot .rep-cancel{font-size:12px;font-weight:600;color:var(--soft-ink);background:#fff;border:1px solid var(--line);border-radius:8px;padding:6px 15px;cursor:pointer}
+  #email .em-repfoot .rep-send{font-size:12px;font-weight:700;color:#fff;background:var(--accent);border:0;border-radius:8px;padding:6px 17px;cursor:pointer;box-shadow:0 4px 12px rgba(108,92,239,.28)}
+  #email .em-actbar{display:flex;align-items:center;gap:2px;height:46px;padding:0 16px;border-bottom:1px solid var(--line);flex-shrink:0}
+  #email .em-act{display:inline-flex;align-items:center;gap:6px;font-size:12.5px;color:var(--soft-ink);padding:6px 9px;border-radius:8px;white-space:nowrap}
+  #email .em-act svg{width:15px;height:15px}
+  #email .em-act.danger{color:#d4574e}
+  #email .em-actbar .em-star2{margin-left:auto;color:#dadae2}
+  #email .em-actbar .em-star2 svg{width:16px;height:16px;display:block}
+  #email .em-doc{flex:1;min-height:0;padding:22px 26px;overflow-y:auto}
+  /* 이메일 패널 공통 — 얇은 커스텀 스크롤바 */
+  #email ::-webkit-scrollbar{width:8px;height:8px}
+  #email ::-webkit-scrollbar-track{background:transparent}
+  #email ::-webkit-scrollbar-thumb{background:#d6d6e0;border-radius:8px;border:2px solid transparent;background-clip:padding-box}
+  #email ::-webkit-scrollbar-thumb:hover{background:#bcbcca;border:2px solid transparent;background-clip:padding-box}
+  #email .em-doc,#email .em-list,#email .wfai-body{scrollbar-width:thin;scrollbar-color:#d6d6e0 transparent}
+  #email .em-dsubj{font-size:18px;font-weight:700;color:var(--ink);letter-spacing:-.3px}
+  #email .em-dhead{display:flex;align-items:center;gap:11px;margin-top:18px}
+  #email .em-davatar{width:38px;height:38px;border-radius:50%;background:var(--accent-soft);color:var(--accent);display:flex;align-items:center;justify-content:center;font-size:15px;font-weight:700;flex-shrink:0}
+  #email .em-dfrom{font-size:13px;font-weight:700;color:var(--ink)}
+  #email .em-daddr{font-weight:500;color:var(--muted);margin-left:4px}
+  #email .em-ddate{font-size:11.5px;color:var(--muted);margin-top:3px}
+  #email .em-dto{font-size:12px;color:var(--soft-ink);margin-top:16px;padding-bottom:16px;border-bottom:1px solid var(--line)}
+  #email .em-dbody{font-size:13px;line-height:1.85;color:#3a3a44;margin-top:18px}
+  #email .em-dbody p{margin-bottom:13px}
+  #email .em-dbody .sign{margin-top:18px;color:var(--soft-ink)}
+  /* 선택된 메일 행 강조 */
+  #email .em-row.sel{position:relative}
+
+  /* 받은메일함 배지 5→4 크로스페이드 */
+  #email .em-fold.on .ct{position:relative}
+  #email .em-fold.on .ct .c5,#email .em-fold.on .ct .c4{position:absolute;inset:0;display:flex;align-items:center;justify-content:center}
+  #email .em-fold.on .ct .c4{opacity:0}
+  #email .em-acct{overflow:hidden}
+
+  /* 축소(아이콘 레일) 상태에서의 정렬 보정 */
+  #email .em-fold{white-space:nowrap}
+
+  /* AI 워크스페이스(우측) — 워크플로우 탭 패턴 차용 */
+  #email .em-wfai{flex:0 0 0;width:0;min-width:0;background:#fff;border-left:1px solid var(--line);display:flex;flex-direction:column;overflow:hidden;opacity:0}
+  #email .em-wfai .wfai-hd{display:flex;align-items:center;gap:7px;height:50px;padding:0 13px;border-bottom:1px solid var(--line);white-space:nowrap;flex-shrink:0}
+  #email .em-wfai .wfai-dot{color:var(--accent);display:inline-flex}
+  #email .em-wfai .wfai-dot svg{width:13px;height:13px}
+  #email .em-wfai .wfai-t{font-size:12.5px;font-weight:800;color:var(--ink)}
+  #email .em-wfai .wfai-max{margin-left:auto;width:24px;height:24px;border:0;background:transparent;color:var(--muted);border-radius:6px;display:flex;align-items:center;justify-content:center;cursor:pointer}
+  #email .em-wfai .wfai-status{display:flex;align-items:center;gap:5px;font-size:11px;color:var(--accent);padding:8px 13px;border-bottom:1px solid var(--line);white-space:nowrap;flex-shrink:0}
+  #email .em-wfai .wfai-status svg{width:auto;height:15px;flex-shrink:0}
+  #email .em-wfai .wfai-body{padding:13px 12px;overflow:hidden;display:flex;flex-direction:column;gap:10px;flex:1}
+  #email .em-wfai .ai-q{align-self:flex-end;max-width:90%;background:#eef0fe;border:1px solid #dfe1fb;border-radius:12px;border-bottom-right-radius:4px;padding:8px 11px;font-size:11.5px;color:#2a2f3a;line-height:1.5;opacity:0}
+  #email .em-wfai .wfai-r{display:flex;gap:9px;opacity:0}
+  #email .em-wfai .wfai-ava{width:28px;height:28px;border-radius:50%;flex:0 0 auto;overflow:hidden;background:#eceaff}
+  #email .em-wfai .wfai-ava img{width:100%;height:100%;object-fit:cover;display:block}
+  #email .em-wfai .wfai-typing{display:flex;align-items:center;padding:3px 2px;width:fit-content;overflow:hidden;opacity:0}
+  /* 윤소율 메시지: 흰색 말풍선 (모서리 균일 — 좌상단 꼬리 없음) */
+  #email .em-wfai .wbub{background:#fff;border:1px solid var(--line);border-radius:12px;padding:9px 11px;font-size:11.5px;color:#2a2f3a;line-height:1.55;box-shadow:0 1px 2px rgba(0,0,0,.04);opacity:0;overflow:hidden}
+  #email .em-wfai .wbub-added{display:block}
+  #email .em-wfai .wfai-dlog{display:flex;flex-direction:column;gap:6px;padding:2px 0;overflow:hidden}
+  #email .em-wfai .wfai-dlog .logrow{opacity:0}
+  #email .em-wfai .wfai-dlog b{color:var(--ink);font-weight:700}
+  #email .em-wfai .wbub-added .okc{color:#0c9b66;font-weight:900;font-size:12px}
+  @keyframes wbubFold{0%{opacity:1;max-height:120px;margin-top:0}38%{opacity:0;max-height:120px}55%,100%{opacity:0;max-height:0;margin-top:-10px;padding-top:0;padding-bottom:0;border-top-width:0;border-bottom-width:0}}
+  #email .em-wfai .wbub .cat{display:inline-flex;align-items:center;padding:1px 7px;border-radius:6px;font-weight:800;font-size:10.5px;margin:0 1px}
+  #email .em-wfai .wbub .cat-work{background:var(--accent-soft);color:var(--accent)}
+  #email .em-wfai .wbub-sum{display:flex;flex-direction:column;gap:6px}
+  /* 라벨 고정폭 + 값 컬럼 → 줄바꿈 시 값이 라벨 아래로 안 흐름 */
+  #email .em-wfai .wbub-sum .eli{display:grid;grid-template-columns:auto 1fr;column-gap:8px;align-items:start;font-size:11px;color:#3a3a44;line-height:1.5}
+  #email .em-wfai .wbub-sum .eli b{color:var(--muted);font-weight:600}
+  /* 추천 작업: 말풍선 없음 */
+  #email .em-wfai .wbub-rec{opacity:0;padding-top:2px;overflow:hidden}
+  #email .em-wfai .wbub-rec .rec-t{font-size:10.5px;color:var(--muted);font-weight:600;margin-bottom:7px}
+  #email .em-wfai .rec-chips{display:flex;flex-wrap:wrap;gap:5px}
+  #email .em-wfai .rchip{display:inline-flex;align-items:center;gap:4px;font-size:10.5px;font-weight:600;color:var(--soft-ink);background:#fff;border:1px solid var(--line);border-radius:8px;padding:4px 9px;cursor:pointer;white-space:nowrap}
+  #email .em-wfai .rchip svg{width:12px;height:12px;color:#8a8e99}
+  #email .em-wfai .rchip:hover{border-color:#c8c2f3;color:var(--accent)}
+  #email .em-wfai .rchip:hover svg{color:var(--accent)}
+  #email .em-wfai .wfai-rb{display:flex;flex-direction:column;gap:10px;min-width:0}
+  #email .em-wfai .wfai-nm{font-size:11.5px;font-weight:800;color:var(--ink);white-space:nowrap;display:flex;align-items:center}
+  #email .em-wfai .wfai-nm span{font-size:10px;font-weight:600;color:var(--muted);margin-left:4px}
+  #email .em-wfai .wfai-a{background:#f5f6fa;border-radius:12px;border-top-left-radius:4px;padding:8px 11px;font-size:11.5px;color:#2a2f3a;line-height:1.55;opacity:0}
+  #email .em-wfai .ai-log{display:flex;flex-direction:column;gap:6px;padding:2px 0}
+  #email .em-wfai .logr{display:flex;align-items:center;gap:8px;font-size:11px;color:var(--soft-ink);opacity:0}
+  #email .em-wfai .logr .lk{width:15px;height:15px;border-radius:50%;background:#e7f7ee;color:#0c9b66;display:inline-flex;align-items:center;justify-content:center;font-size:9px;font-weight:800;flex-shrink:0}
+  /* AI 핵심 요약 — 항상 떠있는 타이틀 바, 윤소율 큐(2.9s)에 본문이 펼쳐짐. 협업/워크플로우 AI 헤더 톤 통일 */
+  #email .em-detail .em-dsum{flex-shrink:0;background:#faf9ff;border-top:1px solid var(--accent-bd);padding:11px 26px 13px}
+  #email .em-detail .em-dsum-hd{display:flex;align-items:center;justify-content:space-between;cursor:pointer;user-select:none}
+  #email .em-detail .dsum-hd-l{display:flex;align-items:center;gap:6px}
+  #email .em-detail .dsum-ic{display:inline-flex;align-items:center;color:var(--accent)}
+  #email .em-detail .dsum-ic .aistar,#email .em-detail .dsum-ic svg{width:14px;height:14px}
+  #email .em-detail .dsum-ttl{font-size:12px;font-weight:800;color:var(--ink);letter-spacing:-.1px}
+  #email .em-detail .dsum-tg{display:inline-flex;color:var(--muted);opacity:.85}
+  #email .em-detail .dsum-tg svg{width:14px;height:14px;transform:rotate(180deg);transition:transform .25s ease}
+  #email .em-detail .em-dsum-grid{display:flex;flex-direction:column;gap:5px;overflow:hidden;max-height:0;opacity:0;margin-top:0;transition:max-height .28s ease,opacity .2s ease,margin-top .25s ease}
+  #email .em-detail .em-dsum .esl{display:grid;grid-template-columns:38px 1fr;column-gap:8px;align-items:start;font-size:11.5px;color:#3a3a44;line-height:1.5}
+  #email .em-detail .em-dsum .esl b{color:var(--muted);font-weight:600}
+  #email .em-detail .em-dsum.collapsed .em-dsum-grid{max-height:0!important;opacity:0!important;margin-top:0!important}
+  #email .em-detail .em-dsum.collapsed .dsum-tg svg{transform:rotate(180deg)!important}
+  @keyframes dsumGridOpen{to{max-height:220px;opacity:1;margin-top:8px}}
+  @keyframes dsumChevOpen{to{transform:rotate(0deg)}}
+  #email .em-wfai .ai-sum{background:#faf9ff;border:1px solid var(--accent-bd);border-radius:10px;padding:9px 11px;display:flex;flex-direction:column;gap:5px;opacity:0}
+  #email .em-wfai .ai-sum .sl{font-size:11px;color:var(--soft-ink);line-height:1.5;margin-bottom:2px}
+  #email .em-wfai .ai-sum .eli{font-size:11px;color:#3a3a44;line-height:1.45}
+  #email .em-wfai .ai-sum .eli b{color:var(--accent);font-weight:700;margin-right:6px}
+  #email .em-wfai .ai-done{display:flex;align-items:center;gap:8px;background:#e7f7ee;border:1px solid #bfe9d6;border-radius:10px;padding:8px 10px;opacity:0}
+  #email .em-wfai .ai-done .dt{font-size:11px;font-weight:700;color:#0c9b66;flex:1;line-height:1.4}
+  #email .em-wfai .ai-done .db{font-size:11px;font-weight:700;color:#fff;background:var(--accent);border:0;border-radius:7px;padding:6px 12px;cursor:pointer;white-space:nowrap;flex-shrink:0}
+  #email .em-wfai .wfai-input{border-top:1px solid var(--line);height:48px;padding:0 11px;display:flex;align-items:center;gap:8px;flex-shrink:0;white-space:nowrap}
+  #email .em-wfai .wfai-plus{display:grid;place-items:center;width:22px;height:22px;border-radius:50%;background:#f7f7f7;color:var(--soft-ink);font-size:14px;flex-shrink:0}
+  #email .em-wfai .wfai-ph{flex:1;font-size:11.5px;color:var(--muted);overflow:hidden;text-overflow:ellipsis}
+  #email .em-wfai .wfai-send{width:25px;height:25px;border-radius:7px;background:var(--accent);display:flex;align-items:center;justify-content:center;flex-shrink:0}
+
+  /* ── 이메일 타임라인(콘티) ──
+     0~1s: 받은편지함  |  1s: 메일 열림(배지 5→4·행 선택)  |  1.25s: 사이드 축소  |  1.5s~: AI 워크스페이스 */
+  #email.panel.show .em-row.sel{animation:emRowSel .35s ease both;animation-delay:0.4s}
+  #email.panel.show .em-row.sel .em-dot{animation:emFadeOut .3s ease both;animation-delay:0.4s}
+  #email.panel.show .em-fold.on .ct .c5{animation:emFadeOut .35s ease both;animation-delay:0.4s}
+  #email.panel.show .em-fold.on .ct .c4{animation:emFadeIn .35s ease both;animation-delay:0.4s}
+  #email.panel.show .em-empty{animation:emFadeOut .3s ease both;animation-delay:0.5s}
+  #email.panel.show .em-detail{animation:emFadeIn .3s ease 0.6s both}
+  #email.panel.show .em-detail .pane-mail{animation:emFadeIn .3s ease 0.6s both, emFadeOut .35s ease 6.8s forwards, emMailPop .55s ease 3.85s}
+  #email.panel.show .em-detail .tab-reply{animation:tabReplyIn .4s ease both;animation-delay:6.6s}
+  #email.panel.show .em-detail .tab-mail{animation:tabDeact .35s ease forwards;animation-delay:6.8s}
+  #email.panel.show .em-actbar{animation:emRise .4s ease both;animation-delay:0.65s}
+  #email.panel.show .em-dsubj{animation:emRise .4s ease both;animation-delay:0.75s}
+  #email.panel.show .em-dhead{animation:emRise .4s ease both;animation-delay:0.88s}
+  #email.panel.show .em-dto{animation:emRise .4s ease both;animation-delay:0.98s}
+  #email.panel.show .em-dbody{animation:emRise .4s ease both;animation-delay:1.1s}
+  /* 사이드 축소(아이콘 레일) — 상단엔 드롭다운 버튼만, 새 메일은 작성 아이콘만 */
+  #email.panel.show .em-side{animation:emSideShrink .5s cubic-bezier(.4,0,.2,1) both;animation-delay:0.65s}
+  #email.panel.show .em-list{animation:emListShrink .5s cubic-bezier(.4,0,.2,1) both;animation-delay:0.65s}
+  #email.panel.show .em-acct .at{animation:emTextOut .35s ease both;animation-delay:0.65s}
+  #email.panel.show .em-sync{animation:emFadeOut .35s ease both;animation-delay:0.65s}
+  #email.panel.show .em-fold .fl{animation:emTextOut .35s ease both;animation-delay:0.65s}
+  #email.panel.show .em-fold.on .ct{animation:emHide .3s ease both;animation-delay:0.65s}
+  #email.panel.show .em-fold{animation:emFoldPad .5s cubic-bezier(.4,0,.2,1) both;animation-delay:0.65s}
+  #email.panel.show .em-new .nt{animation:emNtOut .5s cubic-bezier(.4,0,.2,1) both;animation-delay:0.65s}
+  /* AI 워크스페이스 등장 → 윤소율 타이핑 → 메일 분류·요약·추천·답장 제안 */
+  #email.panel.show .em-wfai{animation:emWfaiOpen .5s cubic-bezier(.4,0,.2,1) both;animation-delay:0.9s}
+  #email.panel.show .em-wfai .wfai-r{animation:emRise .45s ease both;animation-delay:1.1s}
+  #email.panel.show .em-wfai .wfai-typing{animation:emFadeIn .3s ease 1.3s both, emTypeOut .35s ease 2s forwards}
+  #email.panel.show .em-wfai .wbub-cat{animation:emRise .4s ease both, wbubFold .5s ease forwards;animation-delay:2.15s,3.6s}
+  /* AI가 메일을 읽고 좌측 본문에 핵심 요약을 펼쳐 정리 */
+  #email.panel.show .em-detail .em-dsum-grid{animation:dsumGridOpen .45s cubic-bezier(.4,0,.2,1) both;animation-delay:2.3s}
+  #email.panel.show .em-detail .dsum-tg svg{animation:dsumChevOpen .35s ease both;animation-delay:2.3s}
+  /* 지식 반영: 제안 → 반영하기(누르면 사라짐) → 프로젝트 지식 카드 갱신(신규 항목·건수) */
+  #email.panel.show .em-wfai .wbub-kq{animation:emRise .4s ease both, wbubFold .5s ease forwards;animation-delay:2.85s,3.6s}
+  #email.panel.show .em-wfai .kbtn{animation:emRise .4s ease both, kBtnOut .6s ease forwards;animation-delay:2.9s,3.45s}
+  #email.panel.show .em-wfai .kc{animation:kCardIn .45s ease both;animation-delay:3.7s}
+  #email.panel.show .em-wfai .kc-scan{animation:rsIO 1.2s ease both;animation-delay:6.7s}
+  #email.panel.show .em-wfai .kc-scan::before{animation:rsSweep 1.1s ease-in-out both;animation-delay:6.75s}
+  #email.panel.show .em-wfai .kc .kl.new{animation:kNew 1.0s ease both;animation-delay:4.55s}
+  #email.panel.show .em-wfai .kc .kl.out{animation:kOut .6s ease both;animation-delay:4.55s}
+  #email.panel.show .em-wfai .kc .num .n0{animation:emFadeOut .35s ease both;animation-delay:4.8s}
+  #email.panel.show .em-wfai .kc .num .n1{animation:emFadeIn .35s ease both;animation-delay:4.8s}
+  /* 추천 작업 → 답장 */
+  #email.panel.show .em-wfai .wbub-added{animation:emRise .4s ease both, wbubFold .5s ease forwards;animation-delay:5.2s,6.75s}
+  #email.panel.show .em-wfai .wfai-dlog{animation:emReveal .4s ease both, emRecCollapse .4s ease forwards;animation-delay:7.1s,10.15s}
+  #email.panel.show .em-wfai .wfai-dlog .ed1{animation:logIn .35s ease both;animation-delay:7.15s}
+  #email.panel.show .em-wfai .wfai-dlog .ed2{animation:logIn .35s ease both;animation-delay:8s}
+  #email.panel.show .em-wfai .wfai-dlog .ed3{animation:logIn .35s ease both;animation-delay:8.85s}
+  #email.panel.show .em-wfai .wfai-dlog .ed1 .lrun{animation:dotPulse 1s infinite,runOut .3s ease forwards;animation-delay:7.15s,8s}
+  #email.panel.show .em-wfai .wfai-dlog .ed1 .lchk{animation:chkIn .3s cubic-bezier(.34,1.6,.5,1) forwards;animation-delay:8s}
+  #email.panel.show .em-wfai .wfai-dlog .ed2 .lrun{animation:dotPulse 1s infinite,runOut .3s ease forwards;animation-delay:8s,8.85s}
+  #email.panel.show .em-wfai .wfai-dlog .ed2 .lchk{animation:chkIn .3s cubic-bezier(.34,1.6,.5,1) forwards;animation-delay:8.85s}
+  #email.panel.show .em-wfai .wfai-dlog .ed3 .lrun{animation:dotPulse 1s infinite;animation-delay:8.85s}
+  #email.panel.show .em-wfai .wbub-rec-read{animation:emRise .45s cubic-bezier(.34,1.5,.6,1) both, emRecCollapse .4s ease forwards;animation-delay:5.9s,6.75s}
+  #email.panel.show .em-wfai .wbub-rec-read .rchip:first-child{animation:emChipPress .55s ease both;animation-delay:6.6s}
+  #email.panel.show .em-wfai .wbub-reply2{animation:emReveal .45s ease both;animation-delay:10.3s}
+  #email.panel.show .em-wfai .wbub-rec-reply{animation:emReveal .45s ease both;animation-delay:10.7s}
+  /* 답장 클릭 → 메일 detail이 답장 작성 창으로 전환 */
+  #email.panel.show .em-reply{animation:emFadeIn .4s ease both;animation-delay:6.8s}
+  #email.panel.show .em-reply .rep-field{animation:emFadeIn .35s ease both;animation-delay:6.9s}
+  #email.panel.show .em-reply .em-reptools{animation:emFadeIn .35s ease both;animation-delay:6.9s}
+  #email.panel.show .em-reply .em-repfoot{animation:emFadeIn .4s ease both;animation-delay:6.9s}
+  /* 답장: 지식 카드(.kc)를 스캔한 뒤 제목·본문 작성 */
+  /* em-repbody 외곽 작업 테두리·틴트 + 우하단 AI 작업 중 (스캔~작성 동안 점등) */
+  #email.panel.show .em-reply .em-repbody::before{animation:emGlowIO 4.4s ease both;animation-delay:6.6s}
+  #email.panel.show .em-reply .em-repbody::after{animation:wfWorkFlow 5s linear infinite, emGlowIO 4.4s ease both;animation-delay:0s,6.6s}
+  #email.panel.show .em-reply .em-repbadge{animation:wfWorkIO 4.4s ease both, wfBdFlow 5s linear infinite;animation-delay:6.6s,0s}
+  #email.panel.show .em-reply .em-repbadge .s-big{animation:sBigRise 1.7s ease-in-out infinite}
+  #email.panel.show .em-reply .em-repbadge .s-sm{animation:sSmRise 1.7s ease-in-out infinite;animation-delay:0s}
+  /* 제목: 파란 박스 생기고 → 글씨 */
+  #email.panel.show .em-reply .rep-subj::before{animation:skBox .7s ease both;animation-delay:8.05s}
+  #email.panel.show .em-reply .rep-subj-tx{animation:typeLine .4s ease both;animation-delay:8.27s}
+  /* 본문: 한 줄씩 박스 생기고 → 글씨 주루룩 */
+  #email.panel.show .em-reply .rep-editor-in p:nth-child(1)::before{animation:skBox .65s ease both;animation-delay:8.65s}
+  #email.panel.show .em-reply .rep-editor-in p:nth-child(1) .lt{animation:typeLine .32s ease both;animation-delay:8.79s}
+  #email.panel.show .em-reply .rep-editor-in p:nth-child(2)::before{animation:skBox .65s ease both;animation-delay:8.93s}
+  #email.panel.show .em-reply .rep-editor-in p:nth-child(2) .lt{animation:typeLine .32s ease both;animation-delay:9.07s}
+  #email.panel.show .em-reply .rep-editor-in p:nth-child(3)::before{animation:skBox .65s ease both;animation-delay:9.21s}
+  #email.panel.show .em-reply .rep-editor-in p:nth-child(3) .lt{animation:typeLine .4s ease both;animation-delay:9.35s}
+  #email.panel.show .em-reply .rep-editor-in p:nth-child(4)::before{animation:skBox .65s ease both;animation-delay:9.53s}
+  #email.panel.show .em-reply .rep-editor-in p:nth-child(4) .lt{animation:typeLine .4s ease both;animation-delay:9.67s}
+  #email.panel.show .em-reply .rep-editor-in p:nth-child(5)::before{animation:skBox .65s ease both;animation-delay:9.85s}
+  #email.panel.show .em-reply .rep-editor-in p:nth-child(5) .lt{animation:typeLine .32s ease both;animation-delay:9.99s}
+  #email.panel.show .em-reply .rep-ainote{animation:emFadeIn .4s ease both;animation-delay:10.35s}
+  #email.panel.show .em-reply .rep-sig{animation:emRise .45s ease both;animation-delay:10.55s}
+  /* ===== 지식 반영 카드 스타일 ===== */
+  #email .em-wfai .wbub-kq b{color:var(--ink);font-weight:800;margin:0 -.5px 0 -1px}
+  #email .em-wfai .kbtn{align-self:flex-start;margin-top:0;max-height:36px;overflow:hidden;font-size:11px;font-weight:700;color:#fff;background:var(--accent);border:0;border-radius:8px;padding:7px 13px;cursor:pointer}
+  #email .em-wfai .kc{margin-top:0;border:1px solid var(--line);border-radius:12px;overflow:hidden;position:relative}
+  /* 반영하기 → 메일에서 지식 카드로 날아가는 파일(메일) */
+  #email .em-flyfile{position:absolute;left:0;top:0;z-index:60;opacity:0;pointer-events:none;display:flex;align-items:center;gap:5px;background:#fff;border:1px solid var(--accent-bd);border-radius:9px;padding:5px 9px;box-shadow:0 10px 24px rgba(108,92,239,.28);font-size:10.5px;font-weight:700;color:var(--accent);white-space:nowrap}
+  #email .em-flyfile .eff-ic{display:inline-flex;color:var(--accent)}
+  #email .em-flyfile .eff-ic svg{width:14px;height:14px}
+  @keyframes emMailPop{0%,100%{transform:none}26%{transform:scale(.982)}58%{transform:scale(1.012)}}
+  #email .em-wfai .kc-hd{display:flex;align-items:center;gap:9px;padding:10px 12px;border-bottom:1px solid var(--line)}
+  #email .em-wfai .kc-ic{width:26px;height:26px;border-radius:7px;background:linear-gradient(135deg,#8265e8,#5f80f2);display:grid;place-items:center;color:#fff;flex:0 0 auto}
+  #email .em-wfai .kc-ic svg{width:14px;height:14px}
+  #email .em-wfai .kc-t{font-size:12px;font-weight:800;color:var(--ink)}
+  #email .em-wfai .kc-sub{font-size:10px;color:var(--muted);font-weight:600;margin-top:1px}
+  #email .em-wfai .kc-sub .num{position:relative;display:inline-block;min-width:15px;text-align:center}
+  #email .em-wfai .kc-sub .n0{display:inline-block}
+  #email .em-wfai .kc-sub .n1{position:absolute;left:0;right:0;text-align:center;opacity:0}
+  #email .em-wfai .kc-body{padding:8px 11px;display:flex;flex-direction:column;gap:7px}
+  #email .em-wfai .kl{display:flex;align-items:baseline;gap:7px;font-size:10.5px;line-height:1.45;color:var(--soft-ink,#5b5b66)}
+  #email .em-wfai .kt{flex:0 0 auto;font-size:8.5px;font-weight:700;color:#8a8e99;background:#f1f1f5;border-radius:4px;padding:1.5px 5px;letter-spacing:.2px}
+  #email .em-wfai .kx{flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  #email .em-wfai .kd{flex:0 0 auto;font-size:9px;color:var(--muted);font-weight:600}
+  #email .em-wfai .kl.muted{color:var(--muted)}
+  #email .em-wfai .kl.new{opacity:0;max-height:0;overflow:hidden;background:var(--accent-soft);margin:-3px -6px;padding:0 6px;border-radius:7px}
+  #email .em-wfai .kl.new .kt{background:#e2dcff;color:var(--accent)}
+  @keyframes kBtnOut{0%{opacity:1;max-height:36px;margin-top:0;padding-top:7px;padding-bottom:7px}18%{transform:scale(.95);filter:brightness(.92)}34%{transform:scale(1);filter:none;opacity:1;max-height:36px;margin-top:0;padding-top:7px;padding-bottom:7px}60%{opacity:0;max-height:36px;margin-top:0;padding-top:7px;padding-bottom:7px}61%,100%{opacity:0;max-height:0;margin-top:-10px;padding-top:0;padding-bottom:0}}
+  @keyframes kCardIn{0%{display:none;opacity:0;transform:translateY(8px)}1%{display:block;opacity:0;transform:translateY(8px)}100%{display:block;opacity:1;transform:none}}
+  @keyframes kNew{0%{opacity:0;max-height:0;padding-top:0;padding-bottom:0;background:var(--accent-soft)}30%{opacity:1;max-height:34px;padding-top:5px;padding-bottom:5px;background:var(--accent-soft)}68%{background:var(--accent-soft)}100%{opacity:1;max-height:34px;padding-top:5px;padding-bottom:5px;background:transparent}}
+  @keyframes kOut{from{opacity:1;max-height:24px}to{opacity:0;max-height:0;margin:0;padding-top:0;padding-bottom:0}}
+
+  @keyframes emRowSel{from{background:#fff}to{background:var(--accent-soft)}}
+  @keyframes emFadeIn{from{opacity:0}to{opacity:1}}
+  @keyframes emFadeOut{from{opacity:1}to{opacity:0}}
+  @keyframes emRise{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+  @keyframes emSideShrink{from{flex-basis:200px}to{flex-basis:64px}}
+  @keyframes emListShrink{from{flex-basis:392px}to{flex-basis:208px}}
+  @keyframes emTextOut{0%{opacity:1;max-width:200px}99%{opacity:0;max-width:0;margin:0}100%{opacity:0;max-width:0;display:none}}
+  @keyframes emHide{0%{opacity:1}99%{opacity:0}100%{opacity:0;display:none}}
+  @keyframes emFoldPad{to{padding-left:11.5px}}
+  @keyframes emTypeOut{to{opacity:0;height:0;padding-top:0;padding-bottom:0;margin-top:-10px;margin-bottom:0}}
+  @keyframes emChipPress{0%{transform:scale(1)}28%{transform:scale(1.14);background:var(--accent-soft);border-color:var(--accent-bd);color:var(--accent)}52%{transform:scale(.9)}74%{transform:scale(1.05)}100%{transform:scale(1);background:var(--accent-soft);border-color:var(--accent-bd);color:var(--accent)}}
+  @keyframes emRecCollapse{0%{opacity:1;max-height:130px}99%{opacity:0;max-height:0;margin:0;padding:0;transform:translateY(-4px)}100%{opacity:0;max-height:0;margin:0;padding:0;display:none}}
+  @keyframes emReveal{0%{display:none;opacity:0;transform:translateY(7px)}1%{display:block;opacity:0;transform:translateY(7px)}100%{display:block;opacity:1;transform:none}}
+  @keyframes typeSubj{from{max-width:0}to{max-width:240px}}
+  @keyframes typeLine{to{clip-path:inset(0 0 0 0)}}
+  @keyframes skBox{0%{opacity:0}28%{opacity:1}62%{opacity:1}100%{opacity:0}}
+  @keyframes emGlowIO{0%{opacity:0}12%{opacity:1}85%{opacity:1}100%{opacity:0}}
+  @keyframes emNtOut{0%{max-width:48px;margin-left:7px;opacity:1}100%{max-width:0;margin-left:0;opacity:0}}
+  @keyframes emWfaiOpen{from{flex-basis:0;opacity:0}to{flex-basis:326px;opacity:1}}
+</style>
+  <div class="panel" id="email">
+    <div class="appshell">
+
+      <div class="rail">
+        <div class="logo"></div>
+        <div class="nav">
+          <div class="navi"><div class="ic" data-icon="대시보드">▦</div><div class="lb">대시보드</div></div>
+          <div class="navi"><div class="ic" data-icon="협업">💬</div><div class="lb">협업</div></div>
+          <div class="navi"><div class="ic" data-icon="지식·문서">📄</div><div class="lb">지식·문서</div></div>
+          <div class="navi"><div class="ic" data-icon="오피스">🗂</div><div class="lb">오피스</div></div>
+          <div class="navi"><div class="ic" data-icon="워크플로우">🔀</div><div class="lb">워크플로우</div></div>
+          <div class="navi"><div class="ic" data-icon="관리">⚙</div><div class="lb">관리</div></div>
+        </div>
+      </div>
+
+      <div class="em-side">
+        <div class="em-acct"><span class="at">junhyung.p@crissit.com</span><span class="cv"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg></span></div>
+        <div class="em-new"><span class="np"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"><path fill="currentColor" d="M23 6.5a5.5 5.5 0 1 0-11 0a5.5 5.5 0 0 0 11 0M18 7l.001 2.504a.5.5 0 1 1-1 0V7h-2.505a.5.5 0 0 1 0-1H17V3.5a.5.5 0 0 1 1 0V6h2.497a.5.5 0 0 1 0 1zm2.5 9.75v-4.482A6.5 6.5 0 0 0 22 11.19v5.56a3.25 3.25 0 0 1-3.066 3.245L18.75 20H5.25a3.25 3.25 0 0 1-3.245-3.066L2 16.75v-9.5a3.25 3.25 0 0 1 3.066-3.245L5.25 4h6.248a6.5 6.5 0 0 0-.422 1.5H5.25a1.75 1.75 0 0 0-1.744 1.606L3.5 7.25v.429l8.5 4.474l1.305-.688c.439.371.927.685 1.454.93l-2.41 1.269a.75.75 0 0 1-.602.042l-.096-.042L3.5 9.374v7.376a1.75 1.75 0 0 0 1.606 1.744l.144.006h13.5a1.75 1.75 0 0 0 1.744-1.607z"/></svg></span><span class="nt">새 메일</span></div>
+        <div class="em-fold on"><span class="fi"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 16 12 14 15 10 15 8 12 2 12"></polyline><path d="M5.45 5.11 2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.45-6.89A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11z"></path></svg></span><span class="fl">받은메일함</span><span class="ct"><span class="c5">5</span><span class="c4">4</span></span></div>
+        <div class="em-fold"><span class="fi"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.536 21.686a.5.5 0 0 0 .937-.024l6.5-19a.496.496 0 0 0-.635-.635l-19 6.5a.5.5 0 0 0-.024.937l7.93 3.18a2 2 0 0 1 1.112 1.11z"></path><path d="m21.854 2.147-10.94 10.939"></path></svg></span><span class="fl">보낸메일함</span></div>
+        <div class="em-fold"><span class="fi"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z"></path><path d="M14 2v4a2 2 0 0 0 2 2h4"></path><path d="M10 9H8"></path><path d="M16 13H8"></path><path d="M16 17H8"></path></svg></span><span class="fl">임시보관함</span></div>
+        <div class="em-fold"><span class="fi"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"></path><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"></path><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"></path><line x1="10" x2="10" y1="11" y2="17"></line><line x1="14" x2="14" y1="11" y2="17"></line></svg></span><span class="fl">휴지통</span></div>
+        <div class="em-fold"><span class="fi"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="12" x2="12" y1="8" y2="12"></line><line x1="12" x2="12.01" y1="16" y2="16"></line></svg></span><span class="fl">스팸</span></div>
+        <div class="em-fold"><span class="fi"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 14 1.5-2.9A2 2 0 0 1 9.24 10H20a2 2 0 0 1 1.94 2.5l-1.54 6a2 2 0 0 1-1.95 1.5H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h3.9a2 2 0 0 1 1.69.9l.81 1.2a2 2 0 0 0 1.67.9H18a2 2 0 0 1 2 2v2"></path></svg></span><span class="fl">내게쓴메일함</span></div>
+        <div class="sep"></div>
+        <div class="em-fold"><span class="fi"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 14 1.5-2.9A2 2 0 0 1 9.24 10H20a2 2 0 0 1 1.94 2.5l-1.54 6a2 2 0 0 1-1.95 1.5H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h3.9a2 2 0 0 1 1.69.9l.81 1.2a2 2 0 0 0 1.67.9H18a2 2 0 0 1 2 2v2"></path></svg></span><span class="fl">청구·결제</span></div>
+        <div class="em-fold"><span class="fi"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 14 1.5-2.9A2 2 0 0 1 9.24 10H20a2 2 0 0 1 1.94 2.5l-1.54 6a2 2 0 0 1-1.95 1.5H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h3.9a2 2 0 0 1 1.69.9l.81 1.2a2 2 0 0 0 1.67.9H18a2 2 0 0 1 2 2v2"></path></svg></span><span class="fl">카페</span></div>
+        <div class="em-fold"><span class="fi"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 14 1.5-2.9A2 2 0 0 1 9.24 10H20a2 2 0 0 1 1.94 2.5l-1.54 6a2 2 0 0 1-1.95 1.5H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h3.9a2 2 0 0 1 1.69.9l.81 1.2a2 2 0 0 0 1.67.9H18a2 2 0 0 1 2 2v2"></path></svg></span><span class="fl">SNS</span></div>
+        <div class="em-fold"><span class="fi"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 14 1.5-2.9A2 2 0 0 1 9.24 10H20a2 2 0 0 1 1.94 2.5l-1.54 6a2 2 0 0 1-1.95 1.5H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h3.9a2 2 0 0 1 1.69.9l.81 1.2a2 2 0 0 0 1.67.9H18a2 2 0 0 1 2 2v2"></path></svg></span><span class="fl">프로모션</span></div>
+        <div class="em-sync"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8"></path><path d="M21 3v5h-5"></path><path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16"></path><path d="M8 16H3v5"></path></svg>동기화 6월 24일 오전 09:12<span class="gear"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"></path><circle cx="12" cy="12" r="3"></circle></svg></span></div>
+      </div>
+
+      <div class="em-list">
+        <div class="em-tools">
+          <span class="cb"></span>
+          <span class="tk"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8"></path><path d="M21 3v5h-5"></path><path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16"></path><path d="M8 16H3v5"></path></svg></span>
+          <span class="tk"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"></path><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"></path><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"></path><line x1="10" x2="10" y1="11" y2="17"></line><line x1="14" x2="14" y1="11" y2="17"></line></svg></span>
+          <span class="tk"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21.2 8.4c.5.38.8.97.8 1.6v10a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V10a2 2 0 0 1 .8-1.6l8-6a2 2 0 0 1 2.4 0l8 6Z"></path><path d="m22 10-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 10"></path></svg></span>
+          <span class="tk"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="20" height="16" x="2" y="4" rx="2"></rect><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"></path></svg></span>
+        </div>
+        <div class="em-scroll">
+          <div class="em-row unread"><span class="cb"></span><span class="em-dot"></span><div class="em-body"><div class="em-from">민서연<b class="ai-tag"><svg class="ai-svg" viewBox="0 0 22 18" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M17.6553 17.784V0H21.2073V17.784H17.6553Z" fill="currentColor"/><path d="M0 17.784L5.688 0H9.888L15.576 17.784H11.832L9.312 8.52C9.04 7.592 8.776 6.632 8.52 5.64C8.28 4.632 8.024 3.656 7.752 2.712H7.656C7.432 3.672 7.184 4.648 6.912 5.64C6.656 6.632 6.4 7.592 6.144 8.52L3.6 17.784H0ZM3.528 13.224V10.464H11.976V13.224H3.528Z" fill="currentColor"/></svg></b></div><div class="em-subj">[AI 요약] 오늘의 받은메일 핵심 정리</div><div class="em-prev">준형님, 오늘 도착한 메일 중 확인이 필요한 3건을 우선순위로 정리해 드렸어요.</div></div><div class="em-meta"><span class="em-time">방금</span><span class="em-star"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M11.525 2.295a.53.53 0 0 1 .95 0l2.31 4.679a2.123 2.123 0 0 0 1.595 1.16l5.166.756a.53.53 0 0 1 .294.904l-3.736 3.638a2.123 2.123 0 0 0-.611 1.878l.882 5.14a.53.53 0 0 1-.771.56l-4.618-2.428a2.122 2.122 0 0 0-1.973 0L6.396 21.01a.53.53 0 0 1-.77-.56l.881-5.139a2.122 2.122 0 0 0-.611-1.879L2.16 9.795a.53.53 0 0 1 .294-.906l5.165-.755a2.122 2.122 0 0 0 1.597-1.16z"></path></svg></span></div></div>
+          <div class="em-row unread sel"><span class="cb"></span><span class="em-dot"></span><div class="em-body"><div class="em-from">김도현</div><div class="em-subj">내일 회의 자료 미리 공유드립니다</div><div class="em-prev">안녕하세요. 내일 회의에서 다룰 자료를 미리 공유드립니다. 검토 부탁드립니다.</div></div><div class="em-meta"><span class="em-time">1시간 전</span><span class="em-star"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M11.525 2.295a.53.53 0 0 1 .95 0l2.31 4.679a2.123 2.123 0 0 0 1.595 1.16l5.166.756a.53.53 0 0 1 .294.904l-3.736 3.638a2.123 2.123 0 0 0-.611 1.878l.882 5.14a.53.53 0 0 1-.771.56l-4.618-2.428a2.122 2.122 0 0 0-1.973 0L6.396 21.01a.53.53 0 0 1-.77-.56l.881-5.139a2.122 2.122 0 0 0-.611-1.879L2.16 9.795a.53.53 0 0 1 .294-.906l5.165-.755a2.122 2.122 0 0 0 1.597-1.16z"></path></svg></span></div></div>
+          <div class="em-row"><span class="cb"></span><span class="em-dot"></span><div class="em-body"><div class="em-from">[광고] 클라우드세일</div><div class="em-subj">여름 한정 최대 50% 할인 프로모션</div><div class="em-prev">지금 가입하시면 첫 3개월 이용료가 무료! 이번 주까지만 진행되는 특가입니다.</div></div><div class="em-meta"><span class="em-time">2시간 전</span><span class="em-star"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M11.525 2.295a.53.53 0 0 1 .95 0l2.31 4.679a2.123 2.123 0 0 0 1.595 1.16l5.166.756a.53.53 0 0 1 .294.904l-3.736 3.638a2.123 2.123 0 0 0-.611 1.878l.882 5.14a.53.53 0 0 1-.771.56l-4.618-2.428a2.122 2.122 0 0 0-1.973 0L6.396 21.01a.53.53 0 0 1-.77-.56l.881-5.139a2.122 2.122 0 0 0-.611-1.879L2.16 9.795a.53.53 0 0 1 .294-.906l5.165-.755a2.122 2.122 0 0 0 1.597-1.16z"></path></svg></span></div></div>
+          <div class="em-row unread"><span class="cb"></span><span class="em-dot"></span><div class="em-body"><div class="em-from">정유진</div><div class="em-subj">미팅 일정 조율 요청드립니다</div><div class="em-prev">다음 주 중 미팅 가능한 시간을 알려주시면 일정을 확정하겠습니다.</div></div><div class="em-meta"><span class="em-time">3시간 전</span><span class="em-star"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M11.525 2.295a.53.53 0 0 1 .95 0l2.31 4.679a2.123 2.123 0 0 0 1.595 1.16l5.166.756a.53.53 0 0 1 .294.904l-3.736 3.638a2.123 2.123 0 0 0-.611 1.878l.882 5.14a.53.53 0 0 1-.771.56l-4.618-2.428a2.122 2.122 0 0 0-1.973 0L6.396 21.01a.53.53 0 0 1-.77-.56l.881-5.139a2.122 2.122 0 0 0-.611-1.879L2.16 9.795a.53.53 0 0 1 .294-.906l5.165-.755a2.122 2.122 0 0 0 1.597-1.16z"></path></svg></span></div></div>
+          <div class="em-row unread"><span class="cb"></span><span class="em-dot"></span><div class="em-body"><div class="em-from">최현우</div><div class="em-subj">계약서 검토 요청</div><div class="em-prev">첨부된 계약서 내용을 검토하신 후 의견 회신 부탁드립니다.</div></div><div class="em-meta"><span class="em-time">5시간 전</span><span class="em-star"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M11.525 2.295a.53.53 0 0 1 .95 0l2.31 4.679a2.123 2.123 0 0 0 1.595 1.16l5.166.756a.53.53 0 0 1 .294.904l-3.736 3.638a2.123 2.123 0 0 0-.611 1.878l.882 5.14a.53.53 0 0 1-.771.56l-4.618-2.428a2.122 2.122 0 0 0-1.973 0L6.396 21.01a.53.53 0 0 1-.77-.56l.881-5.139a2.122 2.122 0 0 0-.611-1.879L2.16 9.795a.53.53 0 0 1 .294-.906l5.165-.755a2.122 2.122 0 0 0 1.597-1.16z"></path></svg></span></div></div>
+          <div class="em-row"><span class="cb"></span><span class="em-dot"></span><div class="em-body"><div class="em-from">[광고] 마케팅레터</div><div class="em-subj">신규 기능 출시 — 지금 무료로 체험하세요</div><div class="em-prev">새롭게 추가된 자동화 기능과 활용 팁을 한눈에 소개합니다.</div></div><div class="em-meta"><span class="em-time">1일 전</span><span class="em-star"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M11.525 2.295a.53.53 0 0 1 .95 0l2.31 4.679a2.123 2.123 0 0 0 1.595 1.16l5.166.756a.53.53 0 0 1 .294.904l-3.736 3.638a2.123 2.123 0 0 0-.611 1.878l.882 5.14a.53.53 0 0 1-.771.56l-4.618-2.428a2.122 2.122 0 0 0-1.973 0L6.396 21.01a.53.53 0 0 1-.77-.56l.881-5.139a2.122 2.122 0 0 0-.611-1.879L2.16 9.795a.53.53 0 0 1 .294-.906l5.165-.755a2.122 2.122 0 0 0 1.597-1.16z"></path></svg></span></div></div>
+          <div class="em-row"><span class="cb"></span><span class="em-dot"></span><div class="em-body"><div class="em-from">배송 알림</div><div class="em-subj">주문하신 상품이 발송되었습니다</div><div class="em-prev">주문하신 상품이 오늘 출고되었습니다. 배송 조회를 확인해 주세요.</div></div><div class="em-meta"><span class="em-time">1일 전</span><span class="em-star"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M11.525 2.295a.53.53 0 0 1 .95 0l2.31 4.679a2.123 2.123 0 0 0 1.595 1.16l5.166.756a.53.53 0 0 1 .294.904l-3.736 3.638a2.123 2.123 0 0 0-.611 1.878l.882 5.14a.53.53 0 0 1-.771.56l-4.618-2.428a2.122 2.122 0 0 0-1.973 0L6.396 21.01a.53.53 0 0 1-.77-.56l.881-5.139a2.122 2.122 0 0 0-.611-1.879L2.16 9.795a.53.53 0 0 1 .294-.906l5.165-.755a2.122 2.122 0 0 0 1.597-1.16z"></path></svg></span></div></div>
+          <div class="em-row unread strong"><span class="cb"></span><span class="em-dot"></span><div class="em-body"><div class="em-from">"가입환영팀"</div><div class="em-subj">가입을 진심으로 환영합니다</div><div class="em-prev">서비스 가입을 환영하며 시작에 도움이 되는 가이드를 안내드립니다.</div></div><div class="em-meta"><span class="em-time">1일 전</span><span class="em-star"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M11.525 2.295a.53.53 0 0 1 .95 0l2.31 4.679a2.123 2.123 0 0 0 1.595 1.16l5.166.756a.53.53 0 0 1 .294.904l-3.736 3.638a2.123 2.123 0 0 0-.611 1.878l.882 5.14a.53.53 0 0 1-.771.56l-4.618-2.428a2.122 2.122 0 0 0-1.973 0L6.396 21.01a.53.53 0 0 1-.77-.56l.881-5.139a2.122 2.122 0 0 0-.611-1.879L2.16 9.795a.53.53 0 0 1 .294-.906l5.165-.755a2.122 2.122 0 0 0 1.597-1.16z"></path></svg></span></div></div>
+          <div class="em-row"><span class="cb"></span><span class="em-dot"></span><div class="em-body"><div class="em-from">이서연</div><div class="em-subj">이번 주 프로젝트 진행 상황 업데이트</div><div class="em-prev">금주 프로젝트 진행 상황과 다음 주 계획을 정리하여 공유드립니다.</div></div><div class="em-meta"><span class="em-time">2일 전</span><span class="em-star"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M11.525 2.295a.53.53 0 0 1 .95 0l2.31 4.679a2.123 2.123 0 0 0 1.595 1.16l5.166.756a.53.53 0 0 1 .294.904l-3.736 3.638a2.123 2.123 0 0 0-.611 1.878l.882 5.14a.53.53 0 0 1-.771.56l-4.618-2.428a2.122 2.122 0 0 0-1.973 0L6.396 21.01a.53.53 0 0 1-.77-.56l.881-5.139a2.122 2.122 0 0 0-.611-1.879L2.16 9.795a.53.53 0 0 1 .294-.906l5.165-.755a2.122 2.122 0 0 0 1.597-1.16z"></path></svg></span></div></div>
+          <div class="em-row"><span class="cb"></span><span class="em-dot"></span><div class="em-body"><div class="em-from">박민준</div><div class="em-subj">견적서 관련 문의드립니다</div><div class="em-prev">보내주신 견적과 관련하여 몇 가지 확인하고 싶은 사항이 있습니다.</div></div><div class="em-meta"><span class="em-time">2일 전</span><span class="em-star"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M11.525 2.295a.53.53 0 0 1 .95 0l2.31 4.679a2.123 2.123 0 0 0 1.595 1.16l5.166.756a.53.53 0 0 1 .294.904l-3.736 3.638a2.123 2.123 0 0 0-.611 1.878l.882 5.14a.53.53 0 0 1-.771.56l-4.618-2.428a2.122 2.122 0 0 0-1.973 0L6.396 21.01a.53.53 0 0 1-.77-.56l.881-5.139a2.122 2.122 0 0 0-.611-1.879L2.16 9.795a.53.53 0 0 1 .294-.906l5.165-.755a2.122 2.122 0 0 0 1.597-1.16z"></path></svg></span></div></div>
+          <div class="em-row"><span class="cb"></span><span class="em-dot"></span><div class="em-body"><div class="em-from">결제센터</div><div class="em-subj">6월 이용 영수증이 발급되었습니다</div><div class="em-prev">이번 달 서비스 이용 영수증을 첨부하여 안내드립니다.</div></div><div class="em-meta"><span class="em-time">2일 전</span><span class="em-star"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M11.525 2.295a.53.53 0 0 1 .95 0l2.31 4.679a2.123 2.123 0 0 0 1.595 1.16l5.166.756a.53.53 0 0 1 .294.904l-3.736 3.638a2.123 2.123 0 0 0-.611 1.878l.882 5.14a.53.53 0 0 1-.771.56l-4.618-2.428a2.122 2.122 0 0 0-1.973 0L6.396 21.01a.53.53 0 0 1-.77-.56l.881-5.139a2.122 2.122 0 0 0-.611-1.879L2.16 9.795a.53.53 0 0 1 .294-.906l5.165-.755a2.122 2.122 0 0 0 1.597-1.16z"></path></svg></span></div></div>
+          <div class="em-row"><span class="cb"></span><span class="em-dot"></span><div class="em-body"><div class="em-from">[광고] 쇼핑데이</div><div class="em-subj">이번 주말 특가전 — 인기 상품 한정 수량</div><div class="em-prev">이번 주말 동안만 진행되는 특가전, 인기 상품을 특별가로 만나보세요.</div></div><div class="em-meta"><span class="em-time">3일 전</span><span class="em-star"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M11.525 2.295a.53.53 0 0 1 .95 0l2.31 4.679a2.123 2.123 0 0 0 1.595 1.16l5.166.756a.53.53 0 0 1 .294.904l-3.736 3.638a2.123 2.123 0 0 0-.611 1.878l.882 5.14a.53.53 0 0 1-.771.56l-4.618-2.428a2.122 2.122 0 0 0-1.973 0L6.396 21.01a.53.53 0 0 1-.77-.56l.881-5.139a2.122 2.122 0 0 0-.611-1.879L2.16 9.795a.53.53 0 0 1 .294-.906l5.165-.755a2.122 2.122 0 0 0 1.597-1.16z"></path></svg></span></div></div>
+          <div class="em-row"><span class="cb"></span><span class="em-dot"></span><div class="em-body"><div class="em-from">보안 알림</div><div class="em-subj">새로운 기기에서 로그인되었습니다</div><div class="em-prev">회원님의 계정에 새로운 기기에서 로그인이 감지되었습니다.</div></div><div class="em-meta"><span class="em-time">3일 전</span><span class="em-star"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M11.525 2.295a.53.53 0 0 1 .95 0l2.31 4.679a2.123 2.123 0 0 0 1.595 1.16l5.166.756a.53.53 0 0 1 .294.904l-3.736 3.638a2.123 2.123 0 0 0-.611 1.878l.882 5.14a.53.53 0 0 1-.771.56l-4.618-2.428a2.122 2.122 0 0 0-1.973 0L6.396 21.01a.53.53 0 0 1-.77-.56l.881-5.139a2.122 2.122 0 0 0-.611-1.879L2.16 9.795a.53.53 0 0 1 .294-.906l5.165-.755a2.122 2.122 0 0 0 1.597-1.16z"></path></svg></span></div></div>
+          <div class="em-row"><span class="cb"></span><span class="em-dot"></span><div class="em-body"><div class="em-from">주간 뉴스레터</div><div class="em-subj">이번 주 주요 소식 모아보기</div><div class="em-prev">한 주간의 주요 업계 소식과 인사이트를 정리했습니다.</div></div><div class="em-meta"><span class="em-time">3일 전</span><span class="em-star"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M11.525 2.295a.53.53 0 0 1 .95 0l2.31 4.679a2.123 2.123 0 0 0 1.595 1.16l5.166.756a.53.53 0 0 1 .294.904l-3.736 3.638a2.123 2.123 0 0 0-.611 1.878l.882 5.14a.53.53 0 0 1-.771.56l-4.618-2.428a2.122 2.122 0 0 0-1.973 0L6.396 21.01a.53.53 0 0 1-.77-.56l.881-5.139a2.122 2.122 0 0 0-.611-1.879L2.16 9.795a.53.53 0 0 1 .294-.906l5.165-.755a2.122 2.122 0 0 0 1.597-1.16z"></path></svg></span></div></div>
+          <div class="em-row"><span class="cb"></span><span class="em-dot"></span><div class="em-body"><div class="em-from">인사팀</div><div class="em-subj">사내 복지제도 변경 안내</div><div class="em-prev">변경된 사내 복지제도에 대한 주요 내용을 안내드립니다.</div></div><div class="em-meta"><span class="em-time">4일 전</span><span class="em-star"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M11.525 2.295a.53.53 0 0 1 .95 0l2.31 4.679a2.123 2.123 0 0 0 1.595 1.16l5.166.756a.53.53 0 0 1 .294.904l-3.736 3.638a2.123 2.123 0 0 0-.611 1.878l.882 5.14a.53.53 0 0 1-.771.56l-4.618-2.428a2.122 2.122 0 0 0-1.973 0L6.396 21.01a.53.53 0 0 1-.77-.56l.881-5.139a2.122 2.122 0 0 0-.611-1.879L2.16 9.795a.53.53 0 0 1 .294-.906l5.165-.755a2.122 2.122 0 0 0 1.597-1.16z"></path></svg></span></div></div>
+          <div class="em-row"><span class="cb"></span><span class="em-dot"></span><div class="em-body"><div class="em-from">한지민</div><div class="em-subj">요청하신 자료 회신드립니다</div><div class="em-prev">요청하신 자료를 정리하여 회신드립니다. 확인 부탁드립니다.</div></div><div class="em-meta"><span class="em-time">4일 전</span><span class="em-star"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M11.525 2.295a.53.53 0 0 1 .95 0l2.31 4.679a2.123 2.123 0 0 0 1.595 1.16l5.166.756a.53.53 0 0 1 .294.904l-3.736 3.638a2.123 2.123 0 0 0-.611 1.878l.882 5.14a.53.53 0 0 1-.771.56l-4.618-2.428a2.122 2.122 0 0 0-1.973 0L6.396 21.01a.53.53 0 0 1-.77-.56l.881-5.139a2.122 2.122 0 0 0-.611-1.879L2.16 9.795a.53.53 0 0 1 .294-.906l5.165-.755a2.122 2.122 0 0 0 1.597-1.16z"></path></svg></span></div></div>
+        </div>
+        <div class="em-page"><span class="pg">1-16 / 16</span><span class="nav-b"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg></span><span class="nav-b"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18l6-6-6-6"/></svg></span></div>
+      </div>
+
+      <div class="em-read">
+        <div class="em-empty">
+          <span class="ic"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><rect width="20" height="16" x="2" y="4" rx="2"></rect><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"></path></svg></span>
+          <p>메일을 선택해 주세요</p>
+        </div>
+        <div class="em-detail">
+          <div class="em-tabs">
+            <div class="em-tab tab-mail"><span class="tab-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="20" height="16" x="2" y="4" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/></svg></span>김도현<span class="tab-x"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"><path d="M18 6 6 18M6 6l12 12"/></svg></span></div>
+            <div class="em-tab tab-reply"><span class="tab-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg></span>답장<span class="tab-x"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"><path d="M18 6 6 18M6 6l12 12"/></svg></span></div>
+          </div>
+          <div class="em-actbar">
+            <span class="em-act"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 17 4 12 9 7"></polyline><path d="M20 18v-2a4 4 0 0 0-4-4H4"></path></svg>답장</span>
+            <span class="em-act"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="7 17 2 12 7 7"></polyline><polyline points="12 17 7 12 12 7"></polyline><path d="M22 18v-2a4 4 0 0 0-4-4H7"></path></svg>전체 답장</span>
+            <span class="em-act"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 17 20 12 15 7"></polyline><path d="M4 18v-2a4 4 0 0 1 4-4h12"></path></svg>전달</span>
+            <span class="em-act danger"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"></path><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"></path><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"></path><line x1="10" x2="10" y1="11" y2="17"></line><line x1="14" x2="14" y1="11" y2="17"></line></svg>삭제</span>
+            <span class="em-act"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 14 1.5-2.9A2 2 0 0 1 9.24 10H20a2 2 0 0 1 1.94 2.5l-1.54 6a2 2 0 0 1-1.95 1.5H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h3.9a2 2 0 0 1 1.69.9l.81 1.2a2 2 0 0 0 1.67.9H18a2 2 0 0 1 2 2v2"></path></svg>이동</span>
+            <span class="em-star2"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M11.525 2.295a.53.53 0 0 1 .95 0l2.31 4.679a2.123 2.123 0 0 0 1.595 1.16l5.166.756a.53.53 0 0 1 .294.904l-3.736 3.638a2.123 2.123 0 0 0-.611 1.878l.882 5.14a.53.53 0 0 1-.771.56l-4.618-2.428a2.122 2.122 0 0 0-1.973 0L6.396 21.01a.53.53 0 0 1-.77-.56l.881-5.139a2.122 2.122 0 0 0-.611-1.879L2.16 9.795a.53.53 0 0 1 .294-.906l5.165-.755a2.122 2.122 0 0 0 1.597-1.16z"></path></svg></span>
+          </div>
+          <div class="em-panes">
+          <div class="em-pane pane-mail">
+          <div class="em-doc">
+            <div class="em-dsubj">내일 회의 자료 미리 공유드립니다</div>
+            <div class="em-dhead">
+              <div class="em-davatar">김</div>
+              <div class="em-dmeta">
+                <div class="em-dfrom">김도현 <span class="em-daddr">&lt;dohyun.kim@partners.co.kr&gt;</span></div>
+                <div class="em-ddate">2026년 6월 25일 오후 1:24</div>
+              </div>
+            </div>
+            <div class="em-dto">받는 사람: 나</div>
+            <div class="em-dbody">
+              <p>안녕하세요, 준형님.</p>
+              <p>내일 오전 회의에서 다룰 자료를 미리 공유드립니다. 첨부된 문서에는 지난 분기 실적 요약과 이번 분기 목표, 그리고 신규 프로젝트 일정안이 정리되어 있습니다.</p>
+              <p>회의 전에 검토해 주시고, 추가로 논의가 필요한 안건이 있으면 회신 부탁드립니다. 특히 신규 프로젝트 일정 부분은 팀별 리소스 조율이 필요해, 미리 의견을 주시면 회의 진행이 한결 수월할 것 같습니다.</p>
+              <p>그럼 내일 뵙겠습니다. 감사합니다.</p>
+              <p class="sign">김도현 드림</p>
+            </div>
+          </div>
+            <div class="em-dsum">
+              <div class="em-dsum-hd"><span class="dsum-hd-l"><span class="dsum-ic"><svg class="aistar" viewBox="0 0 12 12" xmlns="http://www.w3.org/2000/svg"><path fill="currentColor" d="M4.08998 2.01101C4.43998 0.991006 5.84998 0.959006 6.26298 1.91801L6.29798 2.01201L6.76898 3.38801C6.87674 3.70407 7.05118 3.99327 7.28048 4.23603C7.50977 4.47878 7.78857 4.66941 8.09798 4.79501L8.22398 4.84201L9.60098 5.31201C10.621 5.66101 10.653 7.07201 9.69398 7.48501L9.60098 7.52001L8.22398 7.99001C7.90801 8.09766 7.61887 8.27194 7.37612 8.50106C7.13337 8.73018 6.94269 9.00878 6.81698 9.31801L6.76998 9.44401L6.29998 10.822C5.95098 11.842 4.53998 11.873 4.12798 10.915L4.09098 10.822L3.62098 9.44501C3.51343 9.12914 3.3393 8.84006 3.11036 8.59732C2.88142 8.35457 2.60301 8.16384 2.29398 8.03801L2.16798 7.99101L0.790977 7.52101C-0.232023 7.17101 -0.262023 5.76101 0.696977 5.34801L0.789977 5.31201L2.16698 4.84201C2.48285 4.73412 2.77186 4.55963 3.01444 4.33034C3.25701 4.10105 3.44749 3.82231 3.57298 3.51301L3.61998 3.38701L4.08998 2.01101Z"/></svg></span><span class="dsum-ttl">AI 핵심 요약</span></span><span class="dsum-tg"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg></span></div>
+              <div class="em-dsum-grid">
+                <div class="esl"><b>발신</b><span>김도현 · 협력사</span></div>
+                <div class="esl"><b>일정</b><span>6월 26일(목) 오전 10:00</span></div>
+                <div class="esl"><b>핵심</b><span>회의 자료 공유 · 사전 검토 요청</span></div>
+                <div class="esl"><b>요청</b><span>프로젝트 일정에 대한 의견 회신</span></div>
+              </div>
+            </div>
+          </div>
+          <div class="em-pane em-reply">
+          <div class="em-repbody">
+            <div class="em-repbadge"><span class="sp"><svg class="aistar bdstar" viewBox="0 0 12 12" xmlns="http://www.w3.org/2000/svg"><path class="s-big" fill="currentColor" d="M4.08998 2.01101C4.43998 0.991006 5.84998 0.959006 6.26298 1.91801L6.29798 2.01201L6.76898 3.38801C6.87674 3.70407 7.05118 3.99327 7.28048 4.23603C7.50977 4.47878 7.78857 4.66941 8.09798 4.79501L8.22398 4.84201L9.60098 5.31201C10.621 5.66101 10.653 7.07201 9.69398 7.48501L9.60098 7.52001L8.22398 7.99001C7.90801 8.09766 7.61887 8.27194 7.37612 8.50106C7.13337 8.73018 6.94269 9.00878 6.81698 9.31801L6.76998 9.44401L6.29998 10.822C5.95098 11.842 4.53998 11.873 4.12798 10.915L4.09098 10.822L3.62098 9.44501C3.51343 9.12914 3.3393 8.84006 3.11036 8.59732C2.88142 8.35457 2.60301 8.16384 2.29398 8.03801L2.16798 7.99101L0.790977 7.52101C-0.232023 7.17101 -0.262023 5.76101 0.696977 5.34801L0.789977 5.31201L2.16698 4.84201C2.48285 4.73412 2.77186 4.55963 3.01444 4.33034C3.25701 4.10105 3.44749 3.82231 3.57298 3.51301L3.61998 3.38701L4.08998 2.01101Z"/><path class="s-sm" fill="currentColor" d="M9.86098 5.97109e-06C9.97015 -0.000478195 10.0772 0.0298588 10.1699 0.0875286C10.2626 0.145198 10.3372 0.227859 10.385 0.326006L10.413 0.395006L10.617 0.993006L11.217 1.19701C11.3266 1.234 11.4228 1.30279 11.4932 1.39463C11.5637 1.48646 11.6052 1.59718 11.6125 1.71268C11.6198 1.82818 11.5925 1.94324 11.5342 2.04321C11.4759 2.14317 11.3891 2.22351 11.285 2.27401L11.216 2.30201L10.618 2.50601L10.414 3.10501C10.3764 3.21402 10.3075 3.30947 10.2158 3.37935C10.124 3.44923 10.0137 3.49039 9.89864 3.49767C9.78358 3.50494 9.66894 3.47799 9.56916 3.42021C9.46939 3.36244 9.38895 3.27642 9.33798 3.17301L9.30898 3.10501L9.10498 2.50601L8.50598 2.30201C8.39656 2.26496 8.30061 2.19623 8.23032 2.10456C8.16002 2.01289 8.11854 1.9024 8.11115 1.78711C8.10376 1.67183 8.13078 1.55694 8.18879 1.45704C8.2468 1.35714 8.33319 1.27673 8.43698 1.22601L8.50698 1.19801L9.10498 0.994006L9.30898 0.394006C9.34801 0.278718 9.42232 0.178631 9.52139 0.107919C9.62046 0.0372069 9.73926 -0.000546173 9.86098 5.97109e-06Z"/></svg></span> AI 작업 중</div>
+            <div class="rep-field"><span class="rep-lb">받는 사람</span><span class="rep-to">김도현 &lt;dohyun.kim@partners.co.kr&gt;</span></div>
+            <div class="rep-field"><span class="rep-lb">제목</span><span class="rep-subj"><span class="rep-subj-tx">회의 자료 검토 및 일정 의견 회신</span></span></div>
+          <div class="em-reptools">
+            <span class="tbtn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 4h8a4 4 0 0 1 0 8H6z"></path><path d="M6 12h9a4 4 0 0 1 0 8H6z"></path></svg></span>
+            <span class="tbtn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="4" x2="10" y2="4"></line><line x1="14" y1="20" x2="5" y2="20"></line><line x1="15" y1="4" x2="9" y2="20"></line></svg></span>
+            <span class="tbtn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 4v6a6 6 0 0 0 12 0V4"></path><line x1="4" y1="20" x2="20" y2="20"></line></svg></span>
+            <span class="tdiv"></span>
+            <span class="tbtn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="8" y1="6" x2="21" y2="6"></line><line x1="8" y1="12" x2="21" y2="12"></line><line x1="8" y1="18" x2="21" y2="18"></line><line x1="3" y1="6" x2="3.01" y2="6"></line><line x1="3" y1="12" x2="3.01" y2="12"></line><line x1="3" y1="18" x2="3.01" y2="18"></line></svg></span>
+            <span class="tbtn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="10" y1="6" x2="21" y2="6"></line><line x1="10" y1="12" x2="21" y2="12"></line><line x1="10" y1="18" x2="21" y2="18"></line><path d="M4 6h1v4M4 10h2M6 18H4c0-1 2-2 2-3s-1-1.5-2-1"></path></svg></span>
+            <span class="tdiv"></span>
+            <span class="tbtn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg></span>
+            <span class="tbtn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"></rect><circle cx="9" cy="9" r="2"></circle><path d="m21 15-3.09-3.09a2 2 0 0 0-2.82 0L6 21"></path></svg></span>
+            <span class="tbtn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m21.44 11.05-9.19 9.19a6 6 0 0 1-8.49-8.49l8.57-8.57A4 4 0 1 1 18 8.84l-8.59 8.57a2 2 0 0 1-2.83-2.83l8.49-8.48"></path></svg></span>
+          </div>
+            <div class="rep-editor"><div class="rep-editor-in">
+              <p class="tight"><span class="rep-caret"></span><span class="lt">김도현 님, 안녕하세요.</span></p>
+              <p><span class="lt">크리스아이티 박준형입니다.</span></p>
+              <p class="tight"><span class="lt">공유해 주신 회의 자료 잘 받았습니다. 회의 전에 미리 검토하겠습니다.</span></p>
+              <p><span class="lt">신규 프로젝트 일정은 팀 리소스를 확인한 뒤, 회의 때 의견 드리겠습니다.</span></p>
+              <p><span class="lt">감사합니다.</span></p>
+              <div class="rep-sig">
+                <img class="sig-logo" src="crissit-real-assets/crissit.png" alt="crissit">
+                <div class="sig-name"><b>박준형</b> junhyung, Park</div>
+                <div class="sig-role">팀장</div>
+                <div class="sig-contact">junhyung.p@crissit.com &nbsp;·&nbsp; +82-10-1234-5678</div>
+                <div class="sig-tag">AI / LLM / Data Platform / R&amp;D Total Solution / IT consulting / SI</div>
+                <div class="sig-addr">경기 용인시 수지구 포은대로 59번길 37 시그니처광교, 1001호</div>
+                <div class="sig-web">http://www.crissit.com</div>
+              </div>
+            </div></div>
+          </div>
+          <div class="em-repfoot"><div class="rep-btns"><button class="rep-cancel">취소</button><button class="rep-send">보내기</button></div></div>
+          </div>
+          </div>
+        </div>
+      </div>
+
+
+      <div class="em-wfai">
+        <div class="wfai-hd"><span class="wfai-dot"><svg viewBox="0 0 12 12" xmlns="http://www.w3.org/2000/svg"><path fill="currentColor" d="M4.08998 2.01101C4.43998 0.991006 5.84998 0.959006 6.26298 1.91801L6.29798 2.01201L6.76898 3.38801C6.87674 3.70407 7.05118 3.99327 7.28048 4.23603C7.50977 4.47878 7.78857 4.66941 8.09798 4.79501L8.22398 4.84201L9.60098 5.31201C10.621 5.66101 10.653 7.07201 9.69398 7.48501L9.60098 7.52001L8.22398 7.99001C7.90801 8.09766 7.61887 8.27194 7.37612 8.50106C7.13337 8.73018 6.94269 9.00878 6.81698 9.31801L6.76998 9.44401L6.29998 10.822C5.95098 11.842 4.53998 11.873 4.12798 10.915L4.09098 10.822L3.62098 9.44501C3.51343 9.12914 3.3393 8.84006 3.11036 8.59732C2.88142 8.35457 2.60301 8.16384 2.29398 8.03801L2.16798 7.99101L0.790977 7.52101C-0.232023 7.17101 -0.262023 5.76101 0.696977 5.34801L0.789977 5.31201L2.16698 4.84201C2.48285 4.73412 2.77186 4.55963 3.01444 4.33034C3.25701 4.10105 3.44749 3.82231 3.57298 3.51301L3.61998 3.38701L4.08998 2.01101Z"/></svg></span><span class="wfai-t">AI 워크스페이스</span></div>
+        <div class="wfai-status"><svg class="reye" viewBox="0 0 18 18" fill="none" xmlns="http://www.w3.org/2000/svg"><g transform="translate(0 -0.4) scale(0.77)"><path fill="url(#crlk_emsec)" d="M21 11c0 5.55-3.84 10.74-9 12c-5.16-1.26-9-6.45-9-12V5l9-4l9 4zm-9 10c3.75-1 7-5.46 7-9.78V6.3l-7-3.12L5 6.3v4.92C5 15.54 8.25 20 12 21m2.8-10V9.5C14.8 8.1 13.4 7 12 7S9.2 8.1 9.2 9.5V11c-.6 0-1.2.6-1.2 1.2v3.5c0 .7.6 1.3 1.2 1.3h5.5c.7 0 1.3-.6 1.3-1.2v-3.5c0-.7-.6-1.3-1.2-1.3m-1.3 0h-3V9.5c0-.8.7-1.3 1.5-1.3s1.5.5 1.5 1.3z"/></g><defs><linearGradient id="crlk_emsec" x1="0" y1="0" x2="0" y2="1"><stop stop-color="#3082FF"/><stop offset="1" stop-color="#9E17E1"/></linearGradient></defs></svg> 보안 환경에서 AI가 업무 중입니다</div>
+        <div class="wfai-body">
+          <div class="wfai-r">
+            <span class="wfai-ava"><img src="crissit-real-assets/team-comm2.jpg" alt=""></span>
+            <div class="wfai-rb">
+              <div class="wfai-nm">윤소율<b class="ai-tag"><svg class="ai-svg" viewBox="0 0 22 18" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M17.6553 17.784V0H21.2073V17.784H17.6553Z" fill="currentColor"/><path d="M0 17.784L5.688 0H9.888L15.576 17.784H11.832L9.312 8.52C9.04 7.592 8.776 6.632 8.52 5.64C8.28 4.632 8.024 3.656 7.752 2.712H7.656C7.432 3.672 7.184 4.648 6.912 5.64C6.656 6.632 6.4 7.592 6.144 8.52L3.6 17.784H0ZM3.528 13.224V10.464H11.976V13.224H3.528Z" fill="currentColor"/></svg></b> <span>이메일 관리</span></div>
+              <div class="wfai-typing"><span class="tdots"><i></i><i></i><i></i></span></div>
+              <div class="wbub wbub-cat">이 메일은 <b class="cat cat-work">업무</b> 메일이에요. 핵심만 짚어드릴게요.</div>
+              <div class="wbub wbub-kq">받은 메일 내용과 핵심 요약을 <b>스마트물류 플랫폼 구축</b> 지식에 반영할까요?</div>
+              <button class="kbtn">반영하기</button>
+              <div class="kc">
+                <div class="kc-scan"></div>
+                <div class="kc-hd">
+                  <span class="kc-ic"><svg viewBox="0 0 24 24" fill="none"><path fill="currentColor" d="M14.5 3v4.781c0 .423.171.828.476 1.127s.718.467 1.149.467H21v9.031c0 .423-.171.828-.476 1.127a1.64 1.64 0 0 1-1.149.467h-6.604c.23-.2.413-.444.538-.718s.19-.571.191-.872v-4.254c0-.395-.112-.781-.324-1.117a2.15 2.15 0 0 0-.874-.784l-3.25-1.593a2.2 2.2 0 0 0-1.937 0L7 10.718V4.594c0-.423.171-.828.476-1.127A1.64 1.64 0 0 1 8.625 3zm1.083.266V7.78c0 .141.057.276.159.376s.24.155.383.155h4.604z"></path><path fill="currentColor" d="M7.733 11.809c.166 0 .329.04.477.118l3.2 1.675c.177.093.327.236.43.413.105.176.16.38.16.587v4.474c0 .207-.055.41-.16.587-.103.177-.253.32-.43.412l-3.2 1.676a1.03 1.03 0 0 1-.953 0l-3.2-1.676a1.1 1.1 0 0 1-.431-.412 1.16 1.16 0 0 1-.16-.587v-4.474c.001-.208.056-.411.16-.587a1.1 1.1 0 0 1 .43-.413l3.2-1.675c.149-.078.312-.118.477-.118m-2.457 2.758a.51.51 0 0 0-.408-.005.55.55 0 0 0-.292.3.58.58 0 0 0-.005.427.55.55 0 0 0 .285.307l2.344 1.05v2.984c0 .148.056.29.156.395s.236.165.377.165.277-.06.377-.165a.57.57 0 0 0 .157-.395v-2.983l2.343-1.053a.55.55 0 0 0 .28-.307.58.58 0 0 0-.007-.424.55.55 0 0 0-.288-.297.51.51 0 0 0-.405.001L7.733 15.67z"></path></svg></span>
+                  <div><div class="kc-t">스마트물류 플랫폼 구축</div><div class="kc-sub">프로젝트 지식 · <span class="num"><span class="n0">14</span><span class="n1">15</span></span>건</div></div>
+                </div>
+                <div class="kc-body">
+                  <div class="kl new"><span class="kt">메일</span><span class="kx">김도현 — 회의 자료 공유·일정 의견 회신 요청</span><span class="kd">6/26</span></div>
+                  <div class="kl muted"><span class="kt">회의</span><span class="kx">분기 검토 회의 — 신규 일정 리스크 공유</span><span class="kd">6/24</span></div>
+                  <div class="kl muted"><span class="kt">메일</span><span class="kx">이수진 — 요구사항 변경 요청 건</span><span class="kd">6/20</span></div>
+                  <div class="kl muted out"><span class="kt">의견</span><span class="kx">초기 일정 빠듯 → 단계별 버퍼 운영 권장</span><span class="kd">6/18</span></div>
+                </div>
+              </div>
+              <div class="wbub wbub-added">지식문서에 추가했습니다. 추가로 더 도와드릴까요?</div>
+              <div class="wfai-dlog">
+                <div class="logrow ed1"><span class="lic"><span class="lrun"></span><span class="lchk">✓</span></span><span><b>스마트물류 플랫폼 구축</b> 지식 참고</span></div>
+                <div class="logrow ed2"><span class="lic"><span class="lrun"></span><span class="lchk">✓</span></span><span>핵심 요약·메일 맥락 분석</span></div>
+                <div class="logrow ed3"><span class="lic"><span class="lrun"></span><span class="lchk">✓</span></span><span>지식 기반 답장 초안 작성</span></div>
+              </div>
+              <div class="wbub-rec wbub-rec-read">
+                <div class="rec-t">추천 작업</div>
+                <div class="rec-chips">
+                  <button class="rchip"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 17 4 12 9 7"></polyline><path d="M20 18v-2a4 4 0 0 0-4-4H4"></path></svg>답장</button>
+                  <button class="rchip"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 17 20 12 15 7"></polyline><path d="M4 18v-2a4 4 0 0 1 4-4h12"></path></svg>전달</button>
+                  <button class="rchip"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z"></path><path d="M14 2v4a2 2 0 0 0 2 2h4"></path></svg>지식화</button>
+                  <button class="rchip"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="8" y="2" width="8" height="4" rx="1"></rect><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"></path><path d="m9 14 2 2 4-4"></path></svg>업무 등록</button>
+                  <button class="rchip"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"></rect><path d="M16 2v4M8 2v4M3 10h18"></path></svg>일정 등록</button>
+                  <button class="rchip"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"></path><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"></path></svg>리마인더</button>
+                </div>
+              </div>
+              <div class="wbub wbub-reply2">지식을 바탕으로 답장 초안을 작성했어요. 수정할 부분은 말씀만 주세요.</div>
+              <div class="wbub-rec wbub-rec-reply">
+                <div class="rec-t">추천 작업</div>
+                <div class="rec-chips">
+                  <button class="rchip"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 4V2M9 4V2M15 16v-2M8 9h2M20 9h2M17.8 11.8 19 13M15 9h0M17.8 6.2 19 5M3 21l9-9M12.2 6.2 11 5"></path></svg>답변 개선</button>
+                  <button class="rchip"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><path d="M8 14s1.5 2 4 2 4-2 4-2"></path><line x1="9" y1="9" x2="9.01" y2="9"></line><line x1="15" y1="9" x2="15.01" y2="9"></line></svg>정중하게</button>
+                  <button class="rchip"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="6" cy="6" r="3"></circle><circle cx="6" cy="18" r="3"></circle><line x1="20" y1="4" x2="8.12" y2="15.88"></line><line x1="14.47" y1="14.48" x2="20" y2="20"></line><line x1="8.12" y1="8.12" x2="12" y2="12"></line></svg>간결하게</button>
+                  <button class="rchip"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8"></path><path d="M21 3v5h-5"></path><path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16"></path><path d="M8 16H3v5"></path></svg>다시 작성</button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="wfai-input"><span class="wfai-plus">＋</span><span class="wfai-ph">메시지를 입력해 주세요.</span><span class="wfai-send"><svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="#fff" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M12 19V5M5 12l7-7 7 7"/></svg></span></div>
+      </div>
+      <div class="em-flyfile"><span class="eff-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="20" height="16" x="2" y="4" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/></svg></span>메일</div>
+
+    </div>
+  </div>
+
+  <style>
+  /* ===== 실험데이터분석(#data) — 참고 파일 토큰/클래스 기반, #data 스코프 ===== */
+  #data{--c-text-1:#2a2f3a;--c-text-2:#5b6270;--c-text-3:#8b909c;--c-text-4:#aeb3bf;--c-bg-soft:#f1f2f7;--c-border:#e6e6ee;--c-border-strong:#d4d7e0;--c-brand:#6c5cef;--c-brand-strong:#5a49db}
+  #data .dni svg{width:13px;height:13px}
+  #data .zap svg{width:15px;height:15px;display:block}
+  #data .dai-dot .aistar{width:13px;height:13px;display:block}
+  #data .dai-sec .reye{width:13px;height:13px;flex:0 0 auto}
+  #data .dai-send svg{display:block}
+  #data .dpal-card .pi{display:flex;align-items:center;justify-content:center;color:#fff}
+  #data .dpal-card .pi svg{width:10px;height:10px}
+  #data .wfright{flex:1;display:flex;flex-direction:column;min-width:0;min-height:0}
+  #data .wftop{display:flex;align-items:center;gap:10px;border-bottom:1px solid var(--line);background:#fff;flex-shrink:0}
+  #data .wftop-app{flex:0 0 188px;width:188px;align-self:stretch;border-right:1px solid var(--line);display:flex;align-items:center;gap:6px;padding:11px 14px}
+  #data .wftop-app .zap{color:var(--accent)}
+  #data .wftop-appname{font-weight:800;font-size:12.5px;color:#1f2430;white-space:nowrap}
+  #data .wftop-app .wadd{margin-left:auto;color:#b7bac6;font-size:17px}
+  #data .wftop-title{font-weight:800;font-size:12.5px;color:#1f2430;white-space:nowrap}
+  #data .dtabs{display:flex;gap:2px;margin-left:8px}
+  #data .dsubbar{display:flex;align-items:center;gap:4px;padding:0 16px;border-bottom:1px solid var(--line);background:#fff;flex-shrink:0}
+  #data .dtab{border:0;background:transparent;font-family:inherit;font-size:13px;font-weight:700;color:var(--c-text-3);padding:10px 14px;border-bottom:2px solid transparent;margin-bottom:-1px;cursor:pointer}
+  #data .dtab.active{color:var(--accent);border-bottom-color:var(--accent)}
+  #data .wftog{width:26px;height:15px;border-radius:999px;background:#0cb478;position:relative;display:inline-block;margin-left:2px}
+  #data .wftog i{position:absolute;top:2px;right:2px;width:11px;height:11px;border-radius:50%;background:#fff}
+  #data .wftogl{font-size:10.5px;color:#0cb478;font-weight:700}
+  #data .wftools{margin-left:auto;display:flex;align-items:center;gap:6px;padding-right:14px}
+  #data .pill-btn{height:25px;padding:0 9px;border-radius:7px;background:transparent;border:1px solid transparent;color:var(--c-text-2);font-size:11px;font-weight:500;display:inline-flex;align-items:center;gap:4px;cursor:pointer;font-family:inherit;white-space:nowrap}
+  #data .pill-btn.outline{border-color:var(--c-border-strong)}
+  #data .pill-btn.primary{background:var(--accent);color:#fff;font-weight:600;padding:0 11px}
+  #data .wfbody{flex:1;display:flex;min-width:0;min-height:0}
+  #data .wfside{flex:0 0 188px;border-right:1px solid var(--line);background:#fff;padding:11px 8px;overflow:auto;display:flex;flex-direction:column}
+  #data .wfhd{display:flex;align-items:center;gap:7px;font-weight:800;font-size:14px;color:#1f2430;padding:3px 5px 4px}
+  #data .wfhd .wadd{margin-left:auto;color:#b7bac6;font-size:17px;font-weight:400}
+  #data .wfnote{font-size:10px;color:var(--muted);line-height:1.5;padding:0 5px 4px}
+  #data .wgrp{font-size:11px;font-weight:700;color:var(--muted);padding:10px 6px 3px;display:flex;align-items:center}
+  #data .wgrp .cnt{margin-left:auto;color:#c2c5d0}
+  #data .witem{display:flex;align-items:center;gap:8px;padding:6px 7px;border-radius:8px;margin-bottom:1px;cursor:pointer}
+  #data .witem:hover{background:#f7f7fb}
+  #data .witem.on{background:#f0f1ff}
+  #data .witem .wdot{width:7px;height:7px;border-radius:50%;background:#cfd3dd;flex:0 0 auto}
+  #data .witem .wdot.ok{background:#34c98a}
+  #data .witem .wdot.run{background:var(--accent);animation:dzBlink 1.2s infinite}
+  #data .witem .wtx{min-width:0}
+  #data .witem b{display:block;font-size:12px;color:#2a2f3a;font-weight:600;line-height:1.3;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  #data .witem.on b{color:var(--accent);font-weight:700}
+  #data .witem i{display:block;font-size:10px;color:#a8acb8;font-style:normal}
+  #data .wfmain{position:relative;flex:1;min-width:0;min-height:0;background:#fafbfc;display:flex;flex-direction:column}
+  #data .dview{display:none}
+  #data .dview.on{display:flex;flex-direction:column;flex:1;min-height:0}
+  #data #dv-result{padding:16px 18px;overflow:auto}
+  #data .ctxbar{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:13px;font-size:11.5px}
+  #data .ctxbar .pchip{background:var(--accent-soft);color:var(--accent);border-radius:7px;padding:5px 10px;font-weight:700}
+  #data .ctxbar .meta{color:var(--muted)}
+  #data .ctxbar .done{margin-left:auto;color:#34c98a;font-weight:700}
+  #data .stats{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:14px}
+  #data .stat{background:#fff;border:1px solid var(--line);border-radius:11px;padding:10px 12px}
+  #data .stat .k{font-size:10.5px;color:var(--muted);margin-bottom:3px}
+  #data .stat .v{font-size:19px;font-weight:800;letter-spacing:-.02em;color:#23262e}
+  #data .stat .v small{font-size:11px;color:var(--muted);font-weight:600}
+  #data .cgrid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+  /* 성분분석 = 좌우 캐러셀 (다양한 차트 순환) */
+  #data .dcar{overflow:hidden}
+  #data .dcar-track{display:flex}
+  #data.show .dcar-track{animation:dzCar4 9s ease-in-out 5.2s both}
+  #data .dseq-clock{position:absolute;width:0;height:0;opacity:0;pointer-events:none}
+  #data.show .dseq-clock{animation:dzClock 20.5s linear both}
+  @keyframes dzClock{0%{opacity:0}100%{opacity:0}}
+  #data #dExtra{margin-top:14px}
+  #data .dfind{background:#fff;border:1px solid var(--line);border-radius:13px;padding:12px 14px;box-shadow:0 1px 2px rgba(20,20,50,.03)}
+  #data .dfind-h{font-size:12.5px;font-weight:800;color:#23262e;margin-bottom:8px}
+  #data .dfind-row{display:flex;gap:10px;padding:7px 0;border-top:1px solid #f2f3f7;font-size:11.5px}
+  #data .dfind-row:first-of-type{border-top:0}
+  #data .dfind-row b{flex:0 0 120px;color:#3f4458;font-weight:700}
+  #data .dfind-row span{color:var(--muted);line-height:1.45}
+  #data .dmore{position:relative;background:#fff;border:1px solid var(--line);border-radius:13px;padding:12px 14px;margin-top:10px;max-height:78px;overflow:hidden;box-shadow:0 1px 2px rgba(20,20,50,.03);-webkit-mask-image:linear-gradient(180deg,#000 44%,transparent 96%);mask-image:linear-gradient(180deg,#000 44%,transparent 96%)}
+  #data .dcar-slide{flex:0 0 50%;padding:0 6px;box-sizing:border-box}
+  #data .dcar-slide .ccard{height:100%}
+  @keyframes dzCar4{0%,13%{transform:translateX(0)}18%,33%{transform:translateX(-50%)}38%,53%{transform:translateX(-100%)}58%,73%{transform:translateX(-150%)}78%,100%{transform:translateX(-200%)}}
+  /* 광고 = 대시보드 (구조 자체 다름) */
+  #data .dashg{display:flex;flex-direction:column;gap:12px}
+  #data .dash-hero-row{display:grid;grid-template-columns:1.2fr 1fr;gap:12px}
+  #data .dash-hero{background:linear-gradient(135deg,#7C6FF0,#5B4FE0);color:#fff;border-radius:13px;padding:14px 16px;display:flex;flex-direction:column;justify-content:center}
+  #data .dash-hero .dh-l{font-size:11px;opacity:.85}
+  #data .dash-hero .dh-v{font-size:34px;font-weight:800;letter-spacing:-.02em;line-height:1.05}
+  #data .dash-hero .dh-v span{font-size:18px;margin-left:2px}
+  #data .dash-hero .dh-d{font-size:10.5px;opacity:.9;margin-top:6px}
+  #data .dash-kpis{display:grid;grid-template-rows:repeat(3,1fr);gap:8px}
+  #data .dash-kpi{background:#fff;border:1px solid var(--line);border-radius:11px;padding:0 13px;display:flex;align-items:center;justify-content:space-between}
+  #data .dash-kpi .kk{font-size:11px;color:var(--muted)}
+  #data .dash-kpi .kv{font-size:16px;font-weight:700;color:#23262e}
+  #data .dash-grid2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+  #data .ccard{background:#fff;border:1px solid var(--line);border-radius:13px;padding:11px 12px 8px;box-shadow:0 1px 2px rgba(20,20,50,.03);min-width:0}
+  #data .ccard.wide{grid-column:1 / -1}
+  #data .ctitle{display:flex;align-items:center;gap:7px;margin-bottom:4px}
+  #data .ctitle b{font-size:12.5px;color:#23262e}
+  #data .ctag{font-size:9.5px;color:var(--accent);background:var(--accent-soft);border-radius:999px;padding:1px 7px;font-weight:700}
+  #data .ccard svg{display:block;width:100%}
+  #data .wfcanvas{position:relative;flex:1;min-height:0;background:radial-gradient(circle at 1px 1px,#e4e7ef 1px,transparent 0) 0 0/22px 22px,#fafbfc;overflow:hidden}
+  #data .dstage{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%) scale(.8);transform-origin:center;width:804px;height:400px}
+  #data .dnode{position:absolute;width:58px}
+  #data .dtile{position:relative;width:58px;height:58px;border-radius:50%;display:flex;align-items:center;justify-content:center;color:#fff;box-shadow:0 3px 9px rgba(25,28,50,.16)}
+  #data .dtile svg{width:25px;height:25px}
+  #data .dnode.run .dtile{box-shadow:0 0 13px 1px rgba(138,127,192,.34),0 2px 7px rgba(25,28,50,.13)}
+  #data .dnode.wait .dtile{opacity:.42}
+  #data .dport{position:absolute;top:29px;width:9px;height:9px;border-radius:50%;background:#fff;border:1.5px solid #c2cad7;transform:translateY(-50%);z-index:3}
+  #data .dport.in{left:-5px}#data .dport.out{right:-5px}
+  #data .dstat{position:absolute;right:1px;bottom:1px;width:14px;height:14px;border-radius:50%;border:2px solid #fff;display:flex;align-items:center;justify-content:center;font-size:8px;font-weight:900;color:#fff;box-shadow:0 1px 2px rgba(0,0,0,.15)}
+  #data .dstat.done{background:#34c98a}
+  #data .dstat.run{background:#8a7fc0;animation:dzBlink 1.1s infinite}
+  #data .dstat.wait{background:#c2c5d0}
+  #data .dlabel{position:absolute;top:63px;left:50%;transform:translateX(-50%);width:104px;text-align:center;font-size:11px;font-weight:700;color:#23262e;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  #data .dcap{position:absolute;top:79px;left:50%;transform:translateX(-50%);width:116px;text-align:center;font-size:10.5px;color:#8b909c;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  #data .wfai{flex:0 0 236px;background:#fff;border-left:1px solid var(--c-border);display:flex;flex-direction:column;overflow:hidden}
+  #data .dai-hd{display:flex;align-items:center;gap:6px;padding:10px 13px;border-bottom:1px solid var(--c-border)}
+  #data .dai-dot{color:var(--accent);font-size:13px}
+  #data .dai-t{font-size:13px;font-weight:700;color:#23262e}
+  #data .dai-sec{display:flex;align-items:center;gap:5px;padding:8px 13px;font-size:11px;color:var(--c-brand);border-bottom:1px solid var(--c-border)}
+  #data .dai-body{padding:11px;overflow:auto;display:flex;flex-direction:column;gap:10px;flex:1}
+  #data .dai-q{align-self:flex-end;max-width:92%;background:#eef4fd;border:1px solid #dbe6fb;border-radius:10px;padding:8px 11px;font-size:11.5px;color:#2a2f3a;line-height:1.55;opacity:0}
+  #data .dai-r{display:flex;gap:8px;opacity:0}
+  #data .dai-ava{width:27px;height:27px;border-radius:50%;background:linear-gradient(135deg,#9C8CF0,#6C5CE7);flex:0 0 auto}
+  #data .dai-rb{display:flex;flex-direction:column;gap:6px;min-width:0}
+  #data .dai-nm{font-size:11.5px;font-weight:800;color:#23262e}
+  #data .dai-nm span{font-size:10px;font-weight:600;color:#9aa0ac;margin-left:3px}
+  #data .dai-a{background:#fff;border:1px solid #ececf2;border-radius:10px;padding:8px 11px;font-size:11.5px;color:#2a2f3a;line-height:1.55}
+  #data .dai-log{display:flex;flex-direction:column;gap:7px}
+  #data .dlog{display:flex;align-items:center;gap:7px;font-size:11px;color:#3f4458;opacity:0}
+  #data .dlic{width:13px;height:13px;position:relative;flex:0 0 auto}
+  #data .dlrun{position:absolute;inset:0;border-radius:50%;background:var(--accent)}
+  #data .dlchk{position:absolute;inset:-2px;color:#34c98a;font-size:13px;font-weight:900;opacity:0;display:flex;align-items:center;justify-content:center}
+  #data .dai-done{font-size:11.5px;color:#2a2f3a;line-height:1.5;background:#fff;border:1px solid #ececf2;border-radius:10px;padding:9px 11px;opacity:0}
+  #data .dai-done b{color:var(--c-brand);font-weight:700}
+  #data .dai-input{border-top:1px solid var(--c-border);padding:9px 11px;display:flex;align-items:center;gap:8px;flex-shrink:0}
+  #data .dai-plus{display:grid;place-items:center;width:22px;height:22px;border-radius:50%;background:#f7f7f7;color:var(--c-text-3);font-size:14px}
+  #data .dai-ph{flex:1;font-size:11.5px;color:var(--c-text-4)}
+  #data .dai-send{width:26px;height:26px;border-radius:50%;background:var(--accent);color:#fff;display:flex;align-items:center;justify-content:center;font-size:13px}
+  #data .dpipe-cap{font-size:11.5px;color:var(--c-text-2);font-weight:600;margin-bottom:10px;display:flex;align-items:center;gap:6px}
+  #data .dpalette{margin:0;background:#fff;border:0;border-top:1px solid var(--line);border-radius:0;padding:8px 14px 12px;flex-shrink:0}
+  #data .dpal-head{display:flex;align-items:center;padding:2px 2px 6px}
+  #data .dpal-title{font-size:11px;font-weight:700;color:var(--c-text-2)}
+  #data .dpal-head .chev{margin-left:auto;color:var(--c-text-3);font-size:13px}
+  #data .dpal-cats{display:flex;gap:5px;margin-bottom:8px;flex-wrap:wrap}
+  #data .dpal-cat{padding:2px 9px;height:20px;border-radius:6px;font-size:10.5px;font-weight:600;background:var(--c-bg-soft);color:var(--c-text-2);border:0;font-family:inherit;cursor:pointer;display:inline-flex;align-items:center}
+  #data .dpal-cat.on{background:var(--c-brand);color:#fff}
+  #data .dpal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:6px;overflow:hidden}
+  #data .dpal-grid .dpal-card:nth-child(n+15){display:none}
+  #data .dpal-card{display:flex;align-items:center;gap:5px;padding:4px 7px;border-radius:7px;background:#f8f9fc;border:1px solid #eef0f4;font-size:10.5px;font-weight:500;color:var(--c-text-1);min-width:0;cursor:grab}
+  #data .dpal-card:hover{background:#fff;border-color:var(--c-border-strong)}
+  #data .dpal-card .pi{width:16px;height:16px;border-radius:5px;background:var(--accent);flex:0 0 auto}
+  #data .dpal-card .pn{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  /* reveal keyframes — dz* 격리 */
+  @keyframes dzBlink{0%,100%{opacity:.35}50%{opacity:1}}
+  @keyframes dzIn{0%{opacity:0;transform:translateY(7px)}100%{opacity:1;transform:translateY(0)}}
+  @keyframes dzBub{0%{opacity:0;transform:scale(.5)}55%{opacity:1}100%{opacity:1;transform:scale(1)}}
+  @keyframes dzAva{0%{transform:scale(.4)}60%{transform:scale(1.18)}100%{transform:scale(1)}}
+  @keyframes dzLog{0%{opacity:0;transform:translateY(4px)}100%{opacity:1;transform:translateY(0)}}
+  @keyframes dzPulse{0%{transform:scale(.6);box-shadow:0 0 0 0 rgba(108,92,239,.45)}70%{transform:scale(1);box-shadow:0 0 0 5px rgba(108,92,239,0)}100%{transform:scale(.6)}}
+  @keyframes dzRun{to{opacity:0}}
+  @keyframes dzChk{0%{opacity:0;transform:scale(.4)}100%{opacity:1;transform:scale(1)}}
+  @keyframes dzCard{0%{opacity:0;transform:translateY(14px) scale(.98)}100%{opacity:1;transform:none}}
+  @keyframes dzStat{0%{opacity:0;transform:translateY(10px)}100%{opacity:1;transform:none}}
+  @keyframes dzDraw{from{stroke-dashoffset:var(--len)}to{stroke-dashoffset:0}}
+  @keyframes dzPop{0%{opacity:0;transform:scale(.3)}60%{opacity:1}100%{opacity:1;transform:scale(1)}}
+  @keyframes dzGrow{0%{opacity:.45;transform:scaleY(0)}100%{opacity:1;transform:scaleY(1)}}
+  @keyframes dzCell{0%{opacity:0;transform:scale(.2)}100%{opacity:1;transform:scale(1)}}
+  @keyframes dzSoft{from{opacity:0}to{opacity:1}}
+  /* AI 시퀀스 (#data.show 게이팅 → 마스터 클록 구동) */
+  #data.show .dai-q{animation:dzIn .45s ease both;animation-delay:.5s}
+  #data.show .dai-r{animation:dzIn .45s ease both;animation-delay:1.2s}
+  #data.show .dai-ava{transform-origin:center;animation:dzAva .5s cubic-bezier(.34,1.56,.64,1) both;animation-delay:1.25s}
+  #data.show .dai-a{transform-origin:top left;animation:dzBub .42s cubic-bezier(.34,1.6,.5,1) both;animation-delay:1.3s}
+  #data.show .dlr1{animation:dzLog .35s ease both;animation-delay:1.9s}
+  #data.show .dlr2{animation:dzLog .35s ease both;animation-delay:3.0s}
+  #data.show .dlr3{animation:dzLog .35s ease both;animation-delay:4.1s}
+  #data.show .dlr1 .dlrun{animation:dzPulse 1s infinite,dzRun .3s ease forwards;animation-delay:1.9s,3.0s}
+  #data.show .dlr1 .dlchk{animation:dzChk .3s cubic-bezier(.34,1.6,.5,1) both;animation-delay:3.0s}
+  #data.show .dlr2 .dlrun{animation:dzPulse 1s infinite,dzRun .3s ease forwards;animation-delay:3.0s,4.1s}
+  #data.show .dlr2 .dlchk{animation:dzChk .3s cubic-bezier(.34,1.6,.5,1) both;animation-delay:4.1s}
+  #data.show .dlr3 .dlrun{animation:dzPulse 1s infinite,dzRun .3s ease forwards;animation-delay:4.1s,5.4s}
+  #data.show .dlr3 .dlchk{animation:dzChk .3s cubic-bezier(.34,1.6,.5,1) both;animation-delay:5.4s}
+  #data.show .dai-done{transform-origin:top left;animation:dzBub .45s cubic-bezier(.34,1.6,.5,1) both;animation-delay:5.7s}
+  /* 차트 reveal (delay는 JS 인라인) */
+  #data .aDraw{stroke-dasharray:var(--len);stroke-dashoffset:var(--len)}
+  #data .aPop{opacity:0;transform-box:fill-box;transform-origin:center}
+  #data .aGrow{opacity:0;transform-box:fill-box;transform-origin:bottom}
+  #data .aCell{opacity:0;transform-box:fill-box;transform-origin:center}
+  #data .aFade{opacity:0}
+  #data .aCard{opacity:0}
+  #data .aStat{opacity:0}
+  #data.show .aDraw{animation:dzDraw .7s ease both}
+  #data.show .aPop{animation:dzPop .5s cubic-bezier(.34,1.56,.64,1) both}
+  #data.show .aGrow{animation:dzGrow .55s cubic-bezier(.34,1.4,.64,1) both}
+  #data.show .aCell{animation:dzCell .4s cubic-bezier(.2,1.3,.4,1) both}
+  #data.show .aFade{animation:dzSoft .45s ease both}
+  #data.show .aCard{animation:dzCard .5s ease both}
+  #data.show .aStat{animation:dzStat .5s ease both}
+</style>
+  <div class="panel" id="data">
+    <i class="dseq-clock" aria-hidden="true"></i>
+    <div class="appshell">
+      <div class="rail">
+        <div class="logo"></div>
+        <div class="nav">
+          <div class="navi on"><div class="ic" data-icon="대시보드">▦</div><div class="lb">대시보드</div></div>
+          <div class="navi"><div class="ic" data-icon="협업">💬</div><div class="lb">협업</div></div>
+          <div class="navi"><div class="ic" data-icon="지식·문서">📄</div><div class="lb">지식·문서</div></div>
+          <div class="navi"><div class="ic" data-icon="오피스">🗂</div><div class="lb">오피스</div></div>
+          <div class="navi"><div class="ic" data-icon="워크플로우">🔀</div><div class="lb">워크플로우</div></div>
+          <div class="navi"><div class="ic" data-icon="관리">⚙</div><div class="lb">관리</div></div>
+        </div>
+      </div>
+      <div class="wfright">
+        <div class="wftop">
+          <div class="wftop-app"><span class="zap"><svg width="15" height="15" viewBox="10 13 15 16" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M12.8334 22.1667C12.723 22.1671 12.6148 22.1361 12.5213 22.0774C12.4278 22.0187 12.3528 21.9347 12.3052 21.8351C12.2575 21.7356 12.2391 21.6245 12.2521 21.5149C12.265 21.4053 12.3088 21.3016 12.3784 21.2158L18.1534 15.2658C18.1967 15.2158 18.2557 15.1821 18.3208 15.17C18.3858 15.158 18.453 15.1684 18.5114 15.1996C18.5697 15.2308 18.6157 15.281 18.6418 15.3417C18.6679 15.4025 18.6726 15.4704 18.655 15.5342L17.535 19.0458C17.502 19.1342 17.4909 19.2293 17.5027 19.3229C17.5145 19.4166 17.5488 19.5059 17.6028 19.5833C17.6567 19.6608 17.7286 19.724 17.8123 19.7675C17.896 19.8111 17.989 19.8337 18.0834 19.8333H22.1667C22.2771 19.833 22.3853 19.8639 22.4788 19.9226C22.5723 19.9813 22.6472 20.0653 22.6949 20.1649C22.7425 20.2645 22.7609 20.3755 22.748 20.4851C22.735 20.5948 22.6912 20.6985 22.6217 20.7842L16.8467 26.7342C16.8034 26.7842 16.7444 26.818 16.6793 26.83C16.6142 26.842 16.547 26.8316 16.4887 26.8004C16.4304 26.7692 16.3844 26.7191 16.3583 26.6583C16.3322 26.5975 16.3275 26.5296 16.345 26.4658L17.465 22.9542C17.4981 22.8658 17.5092 22.7707 17.4974 22.6771C17.4856 22.5835 17.4512 22.4941 17.3973 22.4167C17.3434 22.3392 17.2715 22.276 17.1878 22.2325C17.1041 22.189 17.0111 22.1664 16.9167 22.1667H12.8334Z" stroke="#4A4DD4" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></span><span class="wftop-appname">실험데이터분석</span><span class="wadd">＋</span></div>
+          <span class="wftop-title" id="dTitle">미백 효능 분석</span>
+          <span class="wftog"><i></i></span><span class="wftogl">활성</span>
+          <div class="wftools"><span class="pill-btn">데이터 미리보기</span><span class="pill-btn">실행 이력</span><span class="pill-btn outline">저장</span><span class="pill-btn primary"><svg viewBox="0 0 24 24" width="11" height="11" fill="currentColor" style="margin-right:4px"><polygon points="6 3 20 12 6 21 6 3"/></svg>실행</span></div>
+        </div>
+        <div class="wfbody">
+          <div class="wfside">
+            <div class="wfhd">분석 세트 <span class="wadd">＋</span></div>
+            <div class="wfnote">기법·워크플로우를 짜둔 분석 구성. 데이터를 연결하면 결과가 만들어집니다.</div>
+            <div class="wgrp">내 분석 세트 <span class="cnt">6</span></div>
+            <div class="witem on" data-set="whitening"><span class="wdot run"></span><div class="wtx"><b>화장품 성분 분석</b><i><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="width:11px;height:11px;vertical-align:-1px;flex:0 0 auto"><path d="M9 17H7A5 5 0 0 1 7 7h2"/><path d="M15 7h2a5 5 0 0 1 0 10h-2"/><line x1="8" y1="12" x2="16" y2="12"/></svg>전성분 248종</i></div></div>
+            <div class="witem" data-set="ad"><span class="wdot ok"></span><div class="wtx"><b>광고 성과 분석</b><i><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="width:11px;height:11px;vertical-align:-1px;flex:0 0 auto"><path d="M9 17H7A5 5 0 0 1 7 7h2"/><path d="M15 7h2a5 5 0 0 1 0 10h-2"/><line x1="8" y1="12" x2="16" y2="12"/></svg>캠페인 로그</i></div></div>
+            <div class="witem"><span class="wdot ok"></span><div class="wtx"><b>처방 안정성 비교</b><i><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="width:11px;height:11px;vertical-align:-1px;flex:0 0 auto"><path d="M9 17H7A5 5 0 0 1 7 7h2"/><path d="M15 7h2a5 5 0 0 1 0 10h-2"/><line x1="8" y1="12" x2="16" y2="12"/></svg>안정성 가속시험</i></div></div>
+            <div class="witem"><span class="wdot ok"></span><div class="wtx"><b>성분 상관 탐색</b><i><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="width:11px;height:11px;vertical-align:-1px;flex:0 0 auto"><path d="M9 17H7A5 5 0 0 1 7 7h2"/><path d="M15 7h2a5 5 0 0 1 0 10h-2"/><line x1="8" y1="12" x2="16" y2="12"/></svg>HPLC 측정</i></div></div>
+            <div class="witem"><span class="wdot"></span><div class="wtx"><b>관능–물성 회귀</b><i>데이터 연결 필요</i></div></div>
+            <div class="wgrp">팀 공유 <span class="cnt">1</span></div>
+            <div class="witem"><span class="wdot ok"></span><div class="wtx"><b>안정성 가속시험 표준세트</b><i><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="width:11px;height:11px;vertical-align:-1px;flex:0 0 auto"><path d="M9 17H7A5 5 0 0 1 7 7h2"/><path d="M15 7h2a5 5 0 0 1 0 10h-2"/><line x1="8" y1="12" x2="16" y2="12"/></svg>가속시험 DB</i></div></div>
+          </div>
+          <div class="wfmain">
+            <div class="dsubbar"><button class="dtab active" data-p="result">분석</button><button class="dtab" data-p="flow">설정</button></div>
+            <div class="dview on" id="dv-result">
+              <div class="ctxbar"><span class="pchip" id="ctxTool"></span><span class="meta" id="ctxData"></span><span class="done" id="ctxDone">● 분석 완료</span></div>
+              <div class="stats" id="dStats"></div>
+              <div class="cgrid" id="dGrid"></div>
+              <div id="dExtra"></div>
+            </div>
+            <div class="dview" id="dv-flow">
+              <div class="wfcanvas" id="dCanvas"></div>
+              <div class="dpalette">
+                <div class="dpal-head"><span class="dpal-title">분석 노드</span><span class="chev">⌄</span></div>
+                <div class="dpal-cats" id="dPalCats"></div>
+                <div class="dpal-grid" id="dPalGrid"></div>
+              </div>
+            </div>
+          </div>
+          <div class="wfai">
+            <div class="dai-hd"><span class="dai-dot"><svg class="aistar" viewBox="0 0 12 12" xmlns="http://www.w3.org/2000/svg"><path fill="currentColor" d="M4.08998 2.01101C4.43998 0.991006 5.84998 0.959006 6.26298 1.91801L6.29798 2.01201L6.76898 3.38801C6.87674 3.70407 7.05118 3.99327 7.28048 4.23603C7.50977 4.47878 7.78857 4.66941 8.09798 4.79501L8.22398 4.84201L9.60098 5.31201C10.621 5.66101 10.653 7.07201 9.69398 7.48501L9.60098 7.52001L8.22398 7.99001C7.90801 8.09766 7.61887 8.27194 7.37612 8.50106C7.13337 8.73018 6.94269 9.00878 6.81698 9.31801L6.76998 9.44401L6.29998 10.822C5.95098 11.842 4.53998 11.873 4.12798 10.915L4.09098 10.822L3.62098 9.44501C3.51343 9.12914 3.3393 8.84006 3.11036 8.59732C2.88142 8.35457 2.60301 8.16384 2.29398 8.03801L2.16798 7.99101L0.790977 7.52101C-0.232023 7.17101 -0.262023 5.76101 0.696977 5.34801L0.789977 5.31201L2.16698 4.84201C2.48285 4.73412 2.77186 4.55963 3.01444 4.33034C3.25701 4.10105 3.44749 3.82231 3.57298 3.51301L3.61998 3.38701L4.08998 2.01101Z"/></svg></span><span class="dai-t">AI 워크스페이스</span></div>
+            <div class="dai-sec"><svg class="reye" viewBox="0 0 18 18" fill="none" xmlns="http://www.w3.org/2000/svg"><g transform="translate(0 -0.4) scale(0.77)"><path fill="url(#dzlk)" d="M21 11c0 5.55-3.84 10.74-9 12c-5.16-1.26-9-6.45-9-12V5l9-4l9 4zm-9 10c3.75-1 7-5.46 7-9.78V6.3l-7-3.12L5 6.3v4.92C5 15.54 8.25 20 12 21m2.8-10V9.5C14.8 8.1 13.4 7 12 7S9.2 8.1 9.2 9.5V11c-.6 0-1.2.6-1.2 1.2v3.5c0 .7.6 1.3 1.2 1.3h5.5c.7 0 1.3-.6 1.3-1.2v-3.5c0-.7-.6-1.3-1.2-1.3m-1.3 0h-3V9.5c0-.8.7-1.3 1.5-1.3s1.5.5 1.5 1.3z"/></g><defs><linearGradient id="dzlk" x1="0" y1="0" x2="0" y2="1"><stop stop-color="#3082FF"/><stop offset="1" stop-color="#9E17E1"/></linearGradient></defs></svg> 보안 환경에서 AI가 분석 중입니다</div>
+            <div class="dai-body">
+              <div class="dai-q" id="daiQ"></div>
+              <div class="dai-r">
+                <div class="dai-ava"></div>
+                <div class="dai-rb">
+                  <div class="dai-nm">분석 AI<span>· 데이터 분석</span></div>
+                  <div class="dai-a">네, 데이터를 연결하고 분석을 실행할게요.</div>
+                  <div class="dai-log">
+                    <div class="dlog dlr1"><span class="dlic"><span class="dlrun"></span><span class="dlchk">✓</span></span><span>데이터 연결 · 정제</span></div>
+                    <div class="dlog dlr2"><span class="dlic"><span class="dlrun"></span><span class="dlchk">✓</span></span><span>분석 실행 (기법 적용)</span></div>
+                    <div class="dlog dlr3"><span class="dlic"><span class="dlrun"></span><span class="dlchk">✓</span></span><span>결과 도식화 · 인사이트 도출</span></div>
+                  </div>
+                  <div class="dai-done" id="daiDone"></div>
+                </div>
+              </div>
+            </div>
+            <div class="dai-input"><span class="dai-plus">＋</span><span class="dai-ph">AI에게 메시지…</span><span class="dai-send"><svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="#fff" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M12 19V5M5 12l7-7 7 7"/></svg></span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
 <style>
 #flow .appshell{position:relative}
 #flow .wfright{flex:1;display:flex;flex-direction:column;min-width:0;min-height:0}
@@ -2780,7 +3646,8 @@
   function reportAnim(){
     let sec=animTotal(document.querySelector('.panel.show'));
     const _pn=document.querySelector('.panel.show');
-    if(_pn&&(_pn.id==='collab'||_pn.id==='docs'||_pn.id==='flow')) sec=Math.round((sec+1.65)*10)/10;  /* 결과 유지(hold ~1.0s) + 첫화면 전환(0.65s) = 한 사이클 길이 */
+    if(_pn&&(_pn.id==='collab'||_pn.id==='docs'||_pn.id==='flow'||_pn.id==='data')) sec=Math.round((sec+1.65)*10)/10;  /* 결과 유지(hold ~1.0s) + 첫화면 전환(0.65s) = 한 사이클 길이 */
+    else if(_pn&&_pn.id==='email') sec=Math.round((sec+1.0)*10)/10;  /* 이메일: 마지막 상태 잠깐 대기 후 루프 */
     try{ if(window.self!==window.top) parent.postMessage({type:'animTotal',seconds:sec},'*'); }catch(e){}
     var el=document.getElementById('saLen'); if(el) el.textContent='애니메이션 ≈ '+sec+'s';
     if(window.__animSync) window.__animSync(sec);   /*[dev-playback]*/
@@ -3039,10 +3906,10 @@
     }
     var TK=window.__TICK; if(TK){ for(var tk in TK){ try{TK[tk](T);}catch(e){} } }
     /* 마무리 resetting 구간(애니 끝 ~ +0.65s): collab에 resetting 클래스 + currentTime 강제 스킵(페이드 자유재생) */
-    var _ap=document.querySelector('.panel.show'), _lp=_ap&&(_ap.id==='collab'||_ap.id==='docs'||_ap.id==='flow'), _RST=_lp && T>=(total-0.65)*1000-1;
+    var _ap=document.querySelector('.panel.show'), _lp=_ap&&(_ap.id==='collab'||_ap.id==='docs'||_ap.id==='flow'||_ap.id==='data'), _RST=_lp && T>=(total-0.65)*1000-1;
     if(_lp){ if(_RST)_ap.classList.add('resetting'); else _ap.classList.remove('resetting'); }
     if(!_RST){ ga().forEach(function(a){ try{ var tg=a.effect&&a.effect.target;
-      if(tg&&tg.classList&&(tg.classList.contains('sp')||tg.classList.contains('docfly2')||tg.classList.contains('scanfan'))){return;}
+      if(tg&&tg.classList&&(tg.classList.contains('sp')||tg.classList.contains('docfly2')||tg.classList.contains('scanfan')||tg.classList.contains('em-flyfile'))){return;}
       a.pause(); a.currentTime=T; }catch(e){} }); }
     for(i=0;i<FX.length;i++){ fx=FX[i]; if(fx.anim){ try{ fx.anim.pause(); fx.anim.currentTime=Math.max(0,T-fx.at); }catch(e){} } }
     paint(T);
@@ -3088,5 +3955,224 @@
 })();
 </script>
 <!-- ▲▲▲  DEV 재생 컨트롤러 끝  ▲▲▲ -->
+<script>
+(function(){
+    var NS='http://www.w3.org/2000/svg',W=340,H=200;
+    function E(t,a){var e=document.createElementNS(NS,t);if(a)for(var k in a)e.setAttribute(k,a[k]);return e;}
+    function L(x1,y1,x2,y2,a){a=a||{};a.x1=x1;a.y1=y1;a.x2=x2;a.y2=y2;return E('line',a);}
+    function TX(x,y,s,a){a=a||{};a.x=x;a.y=y;var t=E('text',a);t.textContent=s;return t;}
+    function sc(d0,d1,r0,r1){return function(v){return r0+(v-d0)/(d1-d0)*(r1-r0);};}
+    function rng(seed){return function(){seed|=0;seed=seed+0x6D2B79F5|0;var t=Math.imul(seed^seed>>>15,1|seed);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296;};}
+    function gauss(r){return Math.sqrt(-2*Math.log(r()+1e-9))*Math.cos(6.283*r());}
+    function quant(a,q){var s=a.slice().sort(function(x,y){return x-y;});var p=(s.length-1)*q,b=Math.floor(p),f=p-b;return s[b+1]!==undefined?s[b]+f*(s[b+1]-s[b]):s[b];}
+    function svg(){return E('svg',{viewBox:'0 0 '+W+' '+H});}
+    function rev(el,cls,d){el.classList.add(cls);el.style.animationDelay=d.toFixed(2)+'s';return el;}
+    function draw(el,len,d){el.style.setProperty('--len',len);el.classList.add('aDraw');el.style.animationDelay=d.toFixed(2)+'s';return el;}
+    function frame(s,o){o=o||{};var l=o.l||42,x0=l,x1=W-12,y0=H-26,y1=12;
+      s.appendChild(L(x0,y1,x0,y0,{stroke:'#C9CDE0'}));s.appendChild(L(x0,y0,x1,y0,{stroke:'#C9CDE0'}));
+      var sx=o.xd?sc(o.xd[0],o.xd[1],x0,x1):null,sy=o.yd?sc(o.yd[0],o.yd[1],y0,y1):null;
+      if(o.yt&&sy)o.yt.forEach(function(t){var Y=sy(t);s.appendChild(L(x0,Y,x1,Y,{stroke:'#F0F1F7'}));s.appendChild(TX(x0-6,Y+3,o.yf?o.yf(t):t,{'font-size':8,fill:'#9aa0ac','text-anchor':'end'}));});
+      if(o.xt&&sx)o.xt.forEach(function(t){var X=sx(t);s.appendChild(TX(X,y0+13,o.xf?o.xf(t):t,{'font-size':8,fill:'#9aa0ac','text-anchor':'middle'}));});
+      if(o.xl)s.appendChild(TX((x0+x1)/2,H-2,o.xl,{'font-size':9,fill:'#7b818e','text-anchor':'middle'}));
+      return {x0:x0,x1:x1,y0:y0,y1:y1,sx:sx,sy:sy};}
+    /* 미백(연구) */
+    function mb_reg(b){var s=svg(),f=frame(s,{xd:[0,10],yd:[0,40],xt:[0,5,10],yt:[0,20,40],xl:'나이아신아마이드 농도(%)'});
+      var r=rng(7),Em=40,K=2.6,fit=function(x){return Em*x/(K+x);},pts=[],i,x;for(i=0;i<14;i++){x=.5+i*.65;pts.push([x,fit(x)+gauss(r)*2.4]);}
+      var cv=[];for(x=0;x<=10;x+=.25)cv.push([f.sx(x),f.sy(fit(x))]);
+      var pl=E('polyline',{points:cv.map(function(p){return p.join(',');}).join(' '),fill:'none',stroke:'#6c5cef','stroke-width':2});draw(pl,420,b+.1);s.appendChild(pl);
+      pts.forEach(function(p,i){var c=E('circle',{cx:f.sx(p[0]),cy:f.sy(Math.max(0,p[1])),r:3.2,fill:'#6c5cef','fill-opacity':.7});rev(c,'aPop',b+.5+i*.05);s.appendChild(c);});
+      var tx=TX(f.x1-4,f.y1+11,'R² 0.94',{'font-size':10,fill:'#6c5cef','text-anchor':'end','font-weight':700});rev(tx,'aFade',b+1);s.appendChild(tx);return s;}
+    function mb_heat(b){var s=svg(),vars=['pH','점도','입자','ΔE','방부','관능'],M=[[1,-.32,.18,.62,-.55,-.71],[-.32,1,.74,.21,.12,.28],[.18,.74,1,.41,-.08,.15],[.62,.21,.41,1,-.38,-.66],[-.55,.12,-.08,-.38,1,.59],[-.71,.28,.15,-.66,.59,1]];
+      var n=6,cell=24,ox=52,oy=12;function col(v){return v>=0?'rgba(108,92,239,'+(.12+v*.78)+')':'rgba(232,92,123,'+(.12-v*.78)+')';}
+      for(var i=0;i<n;i++)for(var j=0;j<n;j++){var x=ox+j*cell,y=oy+i*cell,d=i+j;var rc=E('rect',{x:x,y:y,width:cell-1.5,height:cell-1.5,rx:2,fill:col(M[i][j])});rev(rc,'aCell',b+.1+d*.05);s.appendChild(rc);
+        var tt=TX(x+cell/2-.75,y+cell/2+2.5,M[i][j].toFixed(2).replace('0.','.'),{'font-size':6.5,'text-anchor':'middle',fill:Math.abs(M[i][j])>.55?'#fff':'#4a4470'});rev(tt,'aCell',b+.1+d*.05);s.appendChild(tt);}
+      vars.forEach(function(v,i){s.appendChild(TX(ox-4,oy+i*cell+cell/2+2,v,{'font-size':7.5,'text-anchor':'end',fill:'#7b818e'}));s.appendChild(TX(ox+i*cell+cell/2,oy+n*cell+10,v,{'font-size':7.5,'text-anchor':'middle',fill:'#7b818e'}));});return s;}
+    function mb_box(b){var s=svg(),f=frame(s,{yd:[0,8],yt:[0,4,8],xl:'처방군'});var r=rng(3),g=['A','B','C','D'],mz=[2.1,3.4,2.7,5],gw=(f.x1-f.x0)/4;
+      g.forEach(function(gn,gi){var d=[],k;for(k=0;k<14;k++)d.push(mz[gi]+gauss(r)*.8);var q1=quant(d,.25),md=quant(d,.5),q3=quant(d,.75),lo=Math.min.apply(null,d),hi=Math.max.apply(null,d),cx=f.x0+gw*(gi+.5),bw=20;
+        var wk=L(cx,f.sy(lo),cx,f.sy(hi),{stroke:'#A99CF5'});rev(wk,'aFade',b+.2+gi*.12);s.appendChild(wk);
+        var bx=E('rect',{x:cx-bw/2,y:f.sy(q3),width:bw,height:f.sy(q1)-f.sy(q3),rx:3,fill:'#6c5cef','fill-opacity':.18,stroke:'#6c5cef'});rev(bx,'aPop',b+.3+gi*.12);s.appendChild(bx);
+        var ml=L(cx-bw/2,f.sy(md),cx+bw/2,f.sy(md),{stroke:'#6c5cef','stroke-width':2});rev(ml,'aFade',b+.4+gi*.12);s.appendChild(ml);
+        s.appendChild(TX(cx,f.y0+13,gn,{'font-size':9,'text-anchor':'middle',fill:'#7b818e'}));});return s;}
+    function mb_pca(b){var s=svg(),f=frame(s,{xd:[-4,4],yd:[-4,4],xt:[-4,0,4],yt:[-4,0,4],xl:'PC1 (52%)'});
+      var r=rng(11),cols=['#6c5cef','#34c98a','#E8943A'],cen=[[-2,1.4],[1.8,1.6],[1.2,-1.8]],pi=0;
+      s.appendChild(L(f.sx(-4),f.sy(0),f.sx(4),f.sy(0),{stroke:'#EEF0F7'}));s.appendChild(L(f.sx(0),f.sy(-4),f.sx(0),f.sy(4),{stroke:'#EEF0F7'}));
+      cen.forEach(function(c,ci){for(var k=0;k<5;k++){var cx=f.sx(c[0]+gauss(r)*.8),cy=f.sy(c[1]+gauss(r)*.8);var el=E('circle',{cx:cx,cy:cy,r:3.6,fill:cols[ci],'fill-opacity':.78});rev(el,'aPop',b+.2+pi*.05);s.appendChild(el);pi++;}});return s;}
+    function mb_rsm(b){var s=svg(),f=frame(s,{xd:[1,5],yd:[20,40],xt:[1,3,5],yt:[20,30,40],xl:'배합 변수 A'});
+      var px=f.sx(3.2),py=f.sy(27);[[58,28,'#EEF0FB'],[46,22,'#D9D6FA'],[34,16,'#B9B0F2'],[22,10,'#8E7FEC'],[11,5,'#6c5cef']].forEach(function(d,i){var e=E('ellipse',{cx:px,cy:py,rx:d[0],ry:d[1],fill:d[2],'fill-opacity':.7,stroke:'#fff','stroke-width':.6,transform:'rotate(-20 '+px+' '+py+')'});rev(e,'aFade',b+.12+i*.12);s.appendChild(e);});
+      var pk=E('path',{d:'M'+(px-4)+','+py+' l4,-7 4,7 -4,7 z',fill:'#fff'});rev(pk,'aFade',b+.85);s.appendChild(pk);var tt=TX(px,py-12,'최적 영역',{'font-size':8.5,fill:'#fff','text-anchor':'middle','font-weight':700});rev(tt,'aFade',b+.9);s.appendChild(tt);return s;}
+    function mb_uv(b){var s=svg(),f=frame(s,{xd:[200,400],yd:[0,1.2],xt:[200,300,400],yt:[0,.6,1.2],xl:'파장 (nm)'});
+      var pts=[];for(var wl=200;wl<=400;wl+=4){var y=0.9*Math.exp(-Math.pow((wl-290)/18,2))+0.45*Math.exp(-Math.pow((wl-330)/14,2))+0.05;pts.push([f.sx(wl),f.sy(y)]);}
+      var poly=E('polygon',{points:[[f.x0,f.y0]].concat(pts).concat([[f.x1,f.y0]]).map(function(p){return p.join(',');}).join(' '),fill:'#6c5cef','fill-opacity':.12});rev(poly,'aFade',b+.5);s.appendChild(poly);
+      var pl=E('polyline',{points:pts.map(function(p){return p.join(',');}).join(' '),fill:'none',stroke:'#6c5cef','stroke-width':2});draw(pl,800,b+.1);s.appendChild(pl);return s;}
+    function mb_pairs(b){var s=svg(),vars=['농도','분자량','효능'],n=3,sz=56,ox=30,oy=8,corr=[[1,.3,.85],[.3,1,.2],[.85,.2,1]],r=rng(21),pi=0;
+      for(var i=0;i<n;i++)for(var j=0;j<n;j++){var gx=ox+j*sz,gy=oy+i*sz;var rc=E('rect',{x:gx,y:gy,width:sz-4,height:sz-4,rx:3,fill:'#FAFAFE',stroke:'#EEF0F7'});rev(rc,'aFade',b+.1+(i+j)*.06);s.appendChild(rc);
+        if(i===j){var tt=TX(gx+(sz-4)/2,gy+(sz-4)/2+3,vars[i],{'font-size':9,'text-anchor':'middle',fill:'#6c5cef','font-weight':700});rev(tt,'aFade',b+.2);s.appendChild(tt);}
+        else{var c=corr[i][j];for(var k=0;k<9;k++){var bx=r(),by=c>0?bx*c+(r()-.5)*(1-c):r();var dot=E('circle',{cx:gx+4+bx*(sz-12),cy:gy+(sz-8)-by*(sz-12),r:1.8,fill:'#6c5cef','fill-opacity':.6});rev(dot,'aPop',b+.4+pi*.012);s.appendChild(dot);pi++;}}}return s;}
+    function mb_dendro(b){var s=svg(),ys=sc(0,3,H-26,18),xs=[36,86,138,196,250,304],di=0;
+      function br(x1,h1,x2,h2,jh){var Y=ys(jh);[L(x1,ys(h1),x1,Y,{stroke:'#6c5cef','stroke-width':1.4}),L(x2,ys(h2),x2,Y,{stroke:'#6c5cef','stroke-width':1.4}),L(x1,Y,x2,Y,{stroke:'#6c5cef','stroke-width':1.4})].forEach(function(ln){draw(ln,170,b+.1+di*.1);di++;s.appendChild(ln);});return (x1+x2)/2;}
+      var m1=br(xs[0],0,xs[1],0,.8),m2=br(xs[3],0,xs[4],0,.7),m3=br(m2,.7,xs[5],0,1.6),m4=br(xs[2],0,m3,1.6,2.2);br(m1,.8,m4,2.2,2.85);
+      ['보습','미백','항산화','자외선','진정','방부'].forEach(function(t,i){s.appendChild(TX(xs[i],H-12,t,{'font-size':7.5,'text-anchor':'middle',fill:'#7b818e'}));});return s;}
+    function mb_qq(b){var s=svg(),f=frame(s,{xd:[-2.5,2.5],yd:[-2.5,2.5],xt:[-2,0,2],yt:[-2,0,2],xl:'이론 분위수'}),r=rng(5);
+      var dl=L(f.sx(-2.5),f.sy(-2.5),f.sx(2.5),f.sy(2.5),{stroke:'#A99CF5','stroke-dasharray':'4 3'});rev(dl,'aFade',b+.2);s.appendChild(dl);
+      var zs=[-1.83,-1.32,-1.0,-0.76,-0.55,-0.36,-0.18,-0.06,0.06,0.18,0.36,0.55,0.76,1.0,1.32,1.83];
+      zs.forEach(function(z,i){var sm=z+gauss(r)*.18;var c=E('circle',{cx:f.sx(z),cy:f.sy(sm),r:3,fill:'#6c5cef','fill-opacity':.75});rev(c,'aPop',b+.3+i*.04);s.appendChild(c);});return s;}
+    function mb_ctrl(b){var s=svg(),f=frame(s,{xd:[1,20],yd:[96,104],xt:[1,10,20],yt:[97,100,103],xl:'생산 배치'}),r=rng(9);
+      [[100,'#6c5cef','3 2'],[103,'#E85C7B','5 4'],[97,'#E85C7B','5 4']].forEach(function(d){var ln=L(f.x0,f.sy(d[0]),f.x1,f.sy(d[0]),{stroke:d[1],'stroke-dasharray':d[2]});rev(ln,'aFade',b+.2);s.appendChild(ln);});
+      var pts=[];for(var bb=1;bb<=20;bb++){var y=100+gauss(r)*1.1;if(bb===14)y=103.4;pts.push([f.sx(bb),f.sy(y),y]);}
+      var pl=E('polyline',{points:pts.map(function(p){return p[0]+','+p[1];}).join(' '),fill:'none',stroke:'#6c5cef','stroke-width':1.4});rev(pl,'aFade',b+.45);s.appendChild(pl);
+      pts.forEach(function(p,i){var c=E('circle',{cx:p[0],cy:p[1],r:2.4,fill:p[2]>103||p[2]<97?'#E85C7B':'#6c5cef'});rev(c,'aPop',b+.6+i*.03);s.appendChild(c);});return s;}
+    /* 광고(마케팅 일반) */
+    function ad_donut(b){var s=svg(),data=[['검색',35,'#6c5cef'],['SNS',28,'#8E7FEC'],['디스플레이',18,'#A99CF5'],['제휴',12,'#C9C0F7'],['기타',7,'#E3DEFB']];
+      var cx=92,cy=H/2-2,rr=52,sw=22,C=2*Math.PI*rr,acc=0;
+      data.forEach(function(d,i){var seg=C*d[1]/100;var c=E('circle',{cx:cx,cy:cy,r:rr,fill:'none',stroke:d[2],'stroke-width':sw,'stroke-dasharray':seg+' '+(C-seg),'stroke-dashoffset':-C*acc/100,transform:'rotate(-90 '+cx+' '+cy+')'});rev(c,'aFade',b+.1+i*.12);s.appendChild(c);acc+=d[1];});
+      var t1=TX(cx,cy-1,'총 광고비',{'font-size':8,fill:'#9aa0ac','text-anchor':'middle'});rev(t1,'aFade',b+.5);s.appendChild(t1);
+      var t2=TX(cx,cy+14,'₩4.8억',{'font-size':14,fill:'#23262e','text-anchor':'middle','font-weight':800});rev(t2,'aFade',b+.6);s.appendChild(t2);
+      data.forEach(function(d,i){var ly=26+i*22;var r1=E('rect',{x:182,y:ly-9,width:10,height:10,rx:2,fill:d[2]});rev(r1,'aFade',b+.4+i*.08);s.appendChild(r1);var tt=TX(198,ly,d[0],{'font-size':9,fill:'#4a4458'});rev(tt,'aFade',b+.4+i*.08);s.appendChild(tt);var vv=TX(W-12,ly,d[1]+'%',{'font-size':9,fill:'#7b818e','text-anchor':'end','font-weight':600});rev(vv,'aFade',b+.4+i*.08);s.appendChild(vv);});return s;}
+    function ad_bar(b){var s=svg(),f=frame(s,{yd:[0,6],yt:[0,3,6],xl:'채널'});var data=[['검색',5.2,'#6c5cef'],['SNS',3.8,'#8E7FEC'],['디스플',2.9,'#A99CF5'],['제휴',4.1,'#7C6FF0'],['기타',2.2,'#C9C0F7']],gw=(f.x1-f.x0)/5;
+      data.forEach(function(d,i){var cx=f.x0+gw*(i+.5),bw=24;var rc=E('rect',{x:cx-bw/2,y:f.sy(d[1]),width:bw,height:f.y0-f.sy(d[1]),rx:4,fill:d[2]});rev(rc,'aGrow',b+.15+i*.12);s.appendChild(rc);
+        var vt=TX(cx,f.sy(d[1])-4,d[1].toFixed(1),{'font-size':8,fill:'#7b818e','text-anchor':'middle','font-weight':700});rev(vt,'aFade',b+.5+i*.12);s.appendChild(vt);
+        s.appendChild(TX(cx,f.y0+13,d[0],{'font-size':7.5,'text-anchor':'middle',fill:'#7b818e'}));});return s;}
+    function ad_funnel(b){var s=svg(),stages=[['노출',100,'#A99CF5'],['클릭',38,'#8E7FEC'],['장바구니',12,'#6c5cef'],['구매',6,'#5B4FE0']];var cx=W/2,top=14,h=36,gap=8,mw=210;
+      stages.forEach(function(st,i){var w=mw*Math.sqrt(st[1]/100),y=top+i*(h+gap);var rc=E('rect',{x:cx-w/2,y:y,width:w,height:h,rx:6,fill:st[2]});rev(rc,'aPop',b+.15+i*.18);s.appendChild(rc);
+        var tt=TX(cx,y+h/2+3,st[0]+' '+st[1]+'%',{'font-size':10,fill:'#fff','text-anchor':'middle','font-weight':700});rev(tt,'aFade',b+.4+i*.18);s.appendChild(tt);});return s;}
+    function ad_area(b){var s=svg(),f=frame(s,{xd:[1,12],yd:[0,1500],xt:[1,6,12],yt:[0,750,1500],yf:function(v){return v/1000+'k';},xl:'주차'});var r=rng(17),pts=[],w;for(w=1;w<=12;w++)pts.push([f.sx(w),f.sy(480+w*72+gauss(r)*55)]);
+      var poly=E('polygon',{points:[[f.x0,f.y0]].concat(pts).concat([[f.x1,f.y0]]).map(function(p){return p.join(',');}).join(' '),fill:'#6c5cef','fill-opacity':.12});rev(poly,'aFade',b+.5);s.appendChild(poly);
+      var pl=E('polyline',{points:pts.map(function(p){return p.join(',');}).join(' '),fill:'none',stroke:'#6c5cef','stroke-width':2.2});draw(pl,460,b+.1);s.appendChild(pl);
+      pts.forEach(function(p,i){var c=E('circle',{cx:p[0],cy:p[1],r:2.2,fill:'#6c5cef'});rev(c,'aFade',b+.6+i*.04);s.appendChild(c);});return s;}
+
+    var SETS={
+      whitening:{title:'화장품 성분 분석',tool:'분석 도구: 회귀·상관·다변량·분포',data:'데이터: 전성분 248종 · 1,240 측정값',
+        ask:'@AI 이 제품 전성분 데이터 분석해서 결과 보여줘',done:'<b>분석 완료</b> · 248종 중 핵심 효능 14종 · 주의·규제 3종 도출',
+        stats:[['분석 성분','248','종'],['핵심 효능 성분','14','종'],['주의·규제 성분','3','종'],['데이터 신뢰도 R²','0.94','']],
+        charts:[[mb_reg,'성분 농도–효능 회귀','회귀',false],[mb_heat,'성분 상관 히트맵','상관',false],[mb_box,'성분군 분포','분포',false],[mb_pca,'성분 프로파일 PCA','다변량',false],[mb_ctrl,'배치 품질 관리도','SPC',false],[mb_uv,'성분 UV 흡광','분광',false]],
+        flow:[['데이터 소스','db','#6c5cef','전성분 데이터 · 248종','done',60,150,false],['전처리·정제','clean','#34c98a','결측 보간·표준화','done',220,150,false],['통계 분석','stat','#8E7FEC','회귀·상관·PCA','run',380,150,false],['AI 해석','ai','#7C6FF0','효능·주의성분 도출','run',540,150,true],['결과 도식화','chart','#E8943A','분석 차트','wait',700,150,false]],
+        wires:[[0,1,1],[1,2,1],[2,3,1],[3,4,0]],cats:['전체','소스','전처리','분석','출력'],
+        finds:[['핵심 효능 성분','나이아신아마이드·아데노신 등 14종 — 농도–효능 상관 R² 0.94'],['주의·규제 성분','3종 검출 · 함량 기준 이내 — 모니터링 권장'],['성분 군집','248종 → 보습·미백·항산화 등 5개 기능군으로 분류']],
+        more:['성분 안전성·규제 리포트',[['EWG 안전등급','그린 220 · 옐로 25 · 레드 3'],['알레르기 유발','향료 성분 8종 표시 대상 — 라벨 반영'],['국가별 규제','EU·중국·미국 교차 점검 — 1종 농도 조정 권장']]],
+        pal:[['데이터 소스','db'],['DB 쿼리','db'],['파일 업로드','file'],['결측 보간','clean'],['이상치 제거','filter'],['정규화','transform'],['용량-반응 회귀','stat'],['상관분석','stat'],['분산분석','stat'],['주성분분석','stat'],['군집분석','stat'],['정규성 검정','stat'],['AI 해석','ai'],['시각화','chart'],['통계 리포트','report']]},
+      ad:{layout:'dash',title:'광고 성과 분석',tool:'분석 도구: 전환·기여도 · 회귀',data:'데이터: 캠페인 로그 · 86,400 rows',
+        ask:'@AI 캠페인 로그 연결하고 광고 성과 분석해줄래?',done:'<b>분석 완료</b> · 핵심 차트 4종 구성<br>ROAS 4.2x · B안 전환 +18.8%',
+        stats:[['ROAS(광고수익률)','4.2','x'],['전환율 CVR','3.8','%'],['전환당 비용','₩12.4','k'],['클릭률 CTR','2.1','%']],
+        charts:[[ad_donut,'채널별 광고비 비중','도넛',false],[ad_bar,'채널별 ROAS','막대',false],[ad_area,'주간 매출 추이','추이',true]],
+        flow:[['GA 연동','ga','#E8943A','Google Analytics','done',56,56,false],['광고 매체','ads','#6c5cef','Meta·Google Ads','done',56,252,false],['채널 통합','merge','#34c98a','세션×비용 매칭','done',286,154,false],['성과 분석','stat','#8E7FEC','ROAS·전환·기여도','run',486,154,false],['AI 최적화','ai','#7C6FF0','예산 재배분 제안','run',686,56,true],['대시보드','chart','#E85C7B','KPI·도넛·막대','wait',686,252,false]],
+        wires:[[0,2,1],[1,2,1],[2,3,1],[3,4,1],[3,5,0]],cats:['전체','소스','집계','분석','출력'],
+        finds:[['최고 효율 채널','검색 ROAS 5.2x · CVR 4.1% — 예산 비중 확대 권장'],['전환 이탈 구간','장바구니→구매 50% 이탈 — 체크아웃 단계 개선'],['A/B 테스트','B안 전환 +18.8% (p=.03) — 전체 적용 시 월 +1.4억 추정']],
+        more:['세부 캠페인 리포트',[['신규 vs 재방문','신규 62% · 재방문 38% — 재방문 ROAS 1.8배'],['디바이스','모바일 71% 전환 — 모바일 우선 최적화'],['시간대','20~23시 전환 피크 — 예산 집중 편성 권장']]],
+        pal:[['GA 연동','ga'],['광고 매체','ads'],['DB 쿼리','db'],['채널 매핑','merge'],['중복 제거','filter'],['봇 제외','filter'],['전환 분석','stat'],['기여도 모델','stat'],['세그먼트','stat'],['퍼널 분석','stat'],['A/B 검정','stat'],['AI 최적화','ai'],['대시보드','chart'],['자동 리포트','report']]}
+    };
+    var gid=function(i){return document.getElementById(i);};
+    function render(key,base){base=base||2.0;var S=SETS[key];
+      gid('dTitle').textContent=S.title;gid('ctxTool').textContent=S.tool;gid('ctxData').textContent=S.data;
+      gid('daiQ').textContent=S.ask;gid('daiDone').innerHTML=S.done;
+      var st=gid('dStats'),g=gid('dGrid'),ex=gid('dExtra');st.innerHTML='';g.innerHTML='';g.className='';ex.innerHTML='';
+      function chartCard(c,d){var card=document.createElement('div');card.className='ccard aCard'+(c[3]?' wide':'');card.style.animationDelay=d.toFixed(2)+'s';card.innerHTML='<div class="ctitle"><b>'+c[1]+'</b><span class="ctag">'+c[2]+'</span></div>';card.appendChild(c[0](d+.15));return card;}
+      function rowsHTML(rows){return rows.map(function(f){return '<div class="dfind-row"><b>'+f[0]+'</b><span>'+f[1]+'</span></div>';}).join('');}
+      function extraHTML(S,head,base){var h='<div class="dfind aCard" style="animation-delay:'+(base+.3).toFixed(2)+'s"><div class="dfind-h">'+head+'</div>'+rowsHTML(S.finds)+'</div>';if(S.more){h+='<div class="dmore aCard" style="animation-delay:'+(base+.5).toFixed(2)+'s"><div class="dfind-h">'+S.more[0]+'</div>'+rowsHTML(S.more[1])+'</div>';}return h;}
+      if(S.layout==='dash'){
+        st.style.display='none';g.className='dashg';
+        var h=S.stats[0],k=S.stats.slice(1);
+        var hero=document.createElement('div');hero.className='dash-hero-row aCard';hero.style.animationDelay=base.toFixed(2)+'s';
+        hero.innerHTML='<div class="dash-hero"><div class="dh-l">'+h[0]+'</div><div class="dh-v">'+h[1]+'<span>'+h[2]+'</span></div><div class="dh-d">▲ vs 지난달 · 목표 초과</div></div><div class="dash-kpis">'+k.map(function(t){return '<div class="dash-kpi"><span class="kk">'+t[0]+'</span><span class="kv">'+t[1]+t[2]+'</span></div>';}).join('')+'</div>';
+        g.appendChild(hero);
+        for(var r=0;r<S.charts.length;r+=2){var row=document.createElement('div');row.className='dash-grid2';for(var j=r;j<Math.min(r+2,S.charts.length);j++){row.appendChild(chartCard(S.charts[j],base+.35+j*.32));}g.appendChild(row);}
+        if(S.finds){ex.innerHTML=extraHTML(S,'핵심 인사이트',base);}
+      }else{
+        st.style.display='';
+        S.stats.forEach(function(t,i){var d=document.createElement('div');d.className='stat aStat';d.style.animationDelay=(base+i*.08).toFixed(2)+'s';d.innerHTML='<div class="k">'+t[0]+'</div><div class="v">'+t[1]+(t[2]?'<small>'+t[2]+'</small>':'')+'</div>';st.appendChild(d);});
+        g.className='dcar';var tr=document.createElement('div');tr.className='dcar-track';
+        S.charts.forEach(function(c,i){var sl=document.createElement('div');sl.className='dcar-slide';sl.appendChild(chartCard(c,base+Math.max(0,i-1)*1.6));tr.appendChild(sl);});
+        g.appendChild(tr);
+        if(S.finds){ex.innerHTML=extraHTML(S,'핵심 발견',base);}
+      }}
+    function ic(p){return '<svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">'+p+'</svg>';}
+    var ICONS={
+      db:ic('<ellipse cx="12" cy="6" rx="7.5" ry="3"/><path d="M4.5 6v12c0 1.66 3.36 3 7.5 3s7.5-1.34 7.5-3V6"/><path d="M4.5 12c0 1.66 3.36 3 7.5 3s7.5-1.34 7.5-3"/>'),
+      file:ic('<path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/>'),
+      clean:ic('<path d="M3 6h18"/><path d="M7 12h10"/><path d="M10 18h4"/>'),
+      filter:ic('<polygon points="22 3 2 3 10 12.5 10 19 14 21 14 12.5 22 3"/>'),
+      transform:ic('<polyline points="17 1 21 5 17 9"/><path d="M3 11V9a4 4 0 0 1 4-4h14"/><polyline points="7 23 3 19 7 15"/><path d="M21 13v2a4 4 0 0 1-4 4H3"/>'),
+      stat:ic('<path d="M3 3v18h18"/><circle cx="8" cy="16" r="1.3"/><circle cx="12" cy="11" r="1.3"/><circle cx="16" cy="13" r="1.3"/><circle cx="19" cy="7" r="1.3"/>'),
+      ai:ic('<rect x="3.5" y="11" width="17" height="9" rx="2"/><circle cx="12" cy="6" r="2"/><path d="M12 8v3"/><path d="M8 15.5h.01M16 15.5h.01"/>'),
+      chart:ic('<path d="M3 3v18h18"/><path d="M19 8l-5 5-3-3-4 4"/>'),
+      report:ic('<path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/><path d="M8 13h8M8 17h5"/>'),
+      ga:ic('<path d="M3 3v18h18"/><rect x="7" y="11" width="3" height="7"/><rect x="12" y="7" width="3" height="11"/><rect x="17" y="13" width="3" height="5"/>'),
+      ads:ic('<path d="M3 11l13-6v14L3 13z"/><path d="M3 11v3h2"/>'),
+      merge:ic('<path d="M5 4l7 7 7-7"/><path d="M12 11v9"/>')
+    };
+    var MUTED={db:'#6f7fa6',file:'#6f7fa6',clean:'#5f9b86',filter:'#6f8aa6',transform:'#787da8',stat:'#7c80a0',ai:'#8a7fc0',chart:'#7e8794',report:'#7a828f',ga:'#8a8470',ads:'#6f7fa6',merge:'#5f9b86'};
+    function renderFlow(key){var S=SETS[key],cv=gid('dCanvas');cv.innerHTML='';var ns='http://www.w3.org/2000/svg';
+      var stage=document.createElement('div');stage.className='dstage';cv.appendChild(stage);
+      var ws=document.createElementNS(ns,'svg');ws.setAttribute('class','dwires');ws.setAttribute('viewBox','0 0 804 400');ws.setAttribute('preserveAspectRatio','none');ws.style.cssText='position:absolute;left:0;top:0;width:804px;height:400px;overflow:visible;pointer-events:none';stage.appendChild(ws);
+      var pos={};
+      S.flow.forEach(function(n,i){var col=MUTED[n[1]]||'#7a828f';var st=n[4];var el=document.createElement('div');el.className='dnode '+st+(n[7]?' ai':'');el.style.left=n[5]+'px';el.style.top=n[6]+'px';
+        el.innerHTML='<div class="dtile" style="background:'+col+'">'+(ICONS[n[1]]||'')+'</div><div class="dlabel">'+n[0]+'</div><div class="dcap">'+n[3]+'</div>';
+        stage.appendChild(el);pos[i]={cx:n[5]+29,cy:n[6]+29};});
+      var DEG=Math.PI/180,rA=37,hasOut={},hasIn={};(S.wires||[]).forEach(function(w){hasOut[w[0]]=1;hasIn[w[1]]=1;});
+      function P(cx,cy,r,a){return [cx+r*Math.cos(a),cy+r*Math.sin(a)];}
+      function clamp(v,lo,hi){return v<lo?lo:(v>hi?hi:v);}
+      function arc(c,a0,a1,col){var s=P(c.cx,c.cy,rA,a0),e=P(c.cx,c.cy,rA,a1);var p=document.createElementNS(ns,'path');p.setAttribute('d','M'+s[0]+','+s[1]+' A'+rA+' '+rA+' 0 0 1 '+e[0]+','+e[1]);p.setAttribute('fill','none');p.setAttribute('stroke',col);p.setAttribute('stroke-opacity','0.55');p.setAttribute('stroke-width',2.2);p.setAttribute('stroke-linecap','round');ws.appendChild(p);}
+      S.flow.forEach(function(n,i){var col=MUTED[n[1]]||'#7a828f';if(hasOut[i])arc(pos[i],-46*DEG,46*DEG,col);if(hasIn[i])arc(pos[i],134*DEG,226*DEG,col);});
+      (S.wires||[]).forEach(function(w){var A=pos[w[0]],B=pos[w[1]];if(!A||!B)return;
+        var dx=B.cx-A.cx,dy=B.cy-A.cy,dist=Math.sqrt(dx*dx+dy*dy)||1;
+        var oa=clamp(Math.atan2(dy,dx)*180/Math.PI,-44,44)*DEG;
+        var baD=Math.atan2(-dy,-dx)*180/Math.PI;if(baD<0)baD+=360;var ia=clamp(baD,136,224)*DEG;
+        var od=P(A.cx,A.cy,rA,oa),id=P(B.cx,B.cy,rA,ia),L=clamp(dist*0.3,30,64),col=w[2]?'#9aa0c8':'#c6cedb',colA=MUTED[(S.flow[w[0]]||[])[1]]||'#7a828f',colB=MUTED[(S.flow[w[1]]||[])[1]]||'#7a828f';
+        var c1x=od[0]+Math.cos(oa)*L,c1y=od[1]+Math.sin(oa)*L,c2x=id[0]+Math.cos(ia)*L,c2y=id[1]+Math.sin(ia)*L;
+        var p=document.createElementNS(ns,'path');p.setAttribute('d','M'+od[0]+','+od[1]+' C'+c1x+','+c1y+' '+c2x+','+c2y+' '+id[0]+','+id[1]);p.setAttribute('fill','none');p.setAttribute('stroke',col);p.setAttribute('stroke-width',2);p.setAttribute('stroke-linecap','round');p.setAttribute('stroke-dasharray','4 4');ws.appendChild(p);
+        [[od,colA],[id,colB]].forEach(function(dc){var c=document.createElementNS(ns,'circle');c.setAttribute('cx',dc[0][0]);c.setAttribute('cy',dc[0][1]);c.setAttribute('r',3.4);c.setAttribute('fill',dc[1]);c.setAttribute('stroke','#fff');c.setAttribute('stroke-width',1.2);ws.appendChild(c);});});
+      gid('dPalCats').innerHTML=(S.cats||[]).map(function(c,i){return '<button class="dpal-cat'+(i===0?' on':'')+'">'+c+'</button>';}).join('');
+      gid('dPalGrid').innerHTML=S.pal.map(function(p){var pc=MUTED[p[1]]||'#94a3b8';return '<div class="dpal-card"><span class="pi" style="background:'+pc+'">'+(ICONS[p[1]]||'')+'</span><span class="pn">'+p[0]+'</span></div>';}).join('');}
+    function showTab(p){var panel=gid('data');panel.querySelectorAll('.dtab').forEach(function(t){t.classList.toggle('active',t.getAttribute('data-p')===p);});panel.querySelectorAll('.dview').forEach(function(v){v.classList.toggle('on',v.id==='dv-'+p);});}
+    var panel=gid('data');var __seqManual=false,__seqPhase=-1,curSet='whitening';
+    function el(){return window.__elapsed?window.__elapsed():0;}
+    function setActiveList(key){panel.querySelectorAll('.witem').forEach(function(w){var k=w.getAttribute('data-set');w.classList.toggle('on',k===key);if(k){var dot=w.querySelector('.wdot');dot.className='wdot '+(k===key?'run':'ok');}});}
+    function loadSet(key,base,tab){curSet=key;setActiveList(key);render(key,base);renderFlow(key);showTab(tab);}
+    panel.querySelectorAll('.dtab').forEach(function(t){t.addEventListener('click',function(){__seqManual=true;var p=t.getAttribute('data-p');if(p==='result')render(curSet,el()+0.2);showTab(p);});});
+    panel.querySelectorAll('.witem[data-set]').forEach(function(w){w.addEventListener('click',function(){__seqManual=true;loadSet(w.getAttribute('data-set'),el()+0.2,'result');});});
+    loadSet('whitening',0.5,'flow');
+    /* 마스터 클록 타임라인: 0s 설정·AI연결 → 5s 분석(성분 결과·캐러셀) → 15s 광고 대시보드 → 루프. 렌더 base=현재시각+0.2라 탭 보일 때 항상 보이고 거기서 촤르륵 */
+    window.__TICK=window.__TICK||{};
+    window.__TICK.dataSeq=function(T){var dp=document.querySelector('.panel.show');if(!dp||dp.id!=='data')return;var t=T/1000;
+      if(t<0.4){__seqManual=false;if(__seqPhase!==0){__seqPhase=0;loadSet('whitening',0.5,'flow');}return;}
+      if(__seqManual)return;var ph=t<5?0:(t<15?1:2);if(ph===__seqPhase)return;__seqPhase=ph;
+      if(ph===1){loadSet('whitening',t+0.2,'result');}else if(ph===2){loadSet('ad',t+0.2,'result');}};
+  })();
+</script>
+<script>
+// 이메일: 반영하기 → 메일에서 지식 카드로 파일(메일)이 날아가 안착 (WAAPI, __TICK 마스터시계 구동)
+  (function(){
+    var c=document.getElementById('email'); if(!c)return;
+    var fly=c.querySelector('.em-flyfile'), shell=c.querySelector('.appshell');
+    if(!fly||!shell||!fly.animate){ if(fly)fly.style.display='none'; return; }
+    var anim=null, D=800, LAND=.85, FLYAT=3850;
+    function play(){
+      var src=c.querySelector('.em-detail'), dst=c.querySelector('.em-wfai .kc');
+      if(!src||!dst)return;
+      var sb=shell.getBoundingClientRect(), a=src.getBoundingClientRect(), b=dst.getBoundingClientRect();
+      if(!b.width)return;
+      var sx=a.left-sb.left+Math.min(a.width*0.5,180), sy=a.top-sb.top+90;
+      var ex=b.left-sb.left+b.width/2, ey=b.top-sb.top+14;
+      fly.style.left=ex+'px'; fly.style.top=ey+'px';
+      var dx=sx-ex, dy=sy-ey, L=55;
+      var P=[0,.12,.28,.45,.62,.78,.9,1], SC=[.5,.85,1.06,1,.95,.9,.85,.7], RO=[-6,-7,-6,-4,-2,1,1,0], OP=[0,1,1,1,1,1,.7,0], kf=[];
+      for(var i=0;i<P.length;i++){ var p=P[i], lift=L*Math.sin(Math.PI*p);
+        kf.push({offset:+(p*LAND).toFixed(3),opacity:OP[i],transform:'translate('+(dx*(1-p)).toFixed(1)+'px,'+(dy*(1-p)-lift).toFixed(1)+'px) scale('+SC[i]+') rotate('+RO[i]+'deg)'}); }
+      kf.push({offset:1,opacity:0,transform:'translate(0px,0px) scale(.6) rotate(0deg)'});
+      anim=fly.animate(kf,{duration:D,easing:'linear',fill:'both'});
+    }
+    function reset(){ if(anim){try{anim.cancel();}catch(e){}} anim=null; fly.style.opacity='0'; }
+    (window.__TICK=window.__TICK||{}).emFly=function(T){
+      if(!c.classList.contains('show'))return;
+      if(T>=FLYAT-1 && T<=FLYAT+D){ if(!anim){try{play();}catch(e){}} if(anim){try{anim.pause();anim.currentTime=Math.max(0,Math.min(D,T-FLYAT));}catch(e){}} }
+      else if(anim && T<FLYAT-1){ reset(); }
+      else if(T>FLYAT+D){ fly.style.opacity='0'; }
+    };
+    if(c.classList.contains('show'))reset();
+  })();
+
+
+
+(function(){document.addEventListener('click',function(e){var hd=e.target.closest&&e.target.closest('#email .em-dsum-hd');if(hd){var d=hd.closest('.em-dsum');if(d)d.classList.toggle('collapsed');}});})();
+</script>
 </body>
 </html>
